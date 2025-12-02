@@ -1,63 +1,39 @@
-// Define your api here
-var productListApiUrl = 'http://127.0.0.1:5000/getProducts';
-var uomListApiUrl = 'http://127.0.0.1:5000/getUOM';
-var productSaveApiUrl = 'http://127.0.0.1:5000/addProduct';
-var productDeleteApiUrl = 'http://127.0.0.1:5000/deleteProduct';
-var orderListApiUrl = 'http://127.0.0.1:5000/getAllOrders';
-var orderSaveApiUrl = 'http://127.0.0.1:5000/addOrder';
 
-// For product drop in order
-var productsApiUrl = 'https://fakestoreapi.com/products';
+const API_BASE = "http://127.0.0.1:5000";
 
-function callApi(method, url, data) {
-    $.ajax({
-        method: method,
-        url: url,
-        data: data
-    }).done(function( msg ) {
-        window.location.reload();
+// Simple GET request
+function apiGet(url) {
+    return fetch(API_BASE + url)
+        .then(r => {
+            if (!r.ok) throw new Error("API GET failure");
+            return r.json();
+        });
+}
+
+// POST using FormData with JSON string field "data"
+function apiPost(url, payload) {
+    const fd = new FormData();
+    fd.append("data", JSON.stringify(payload));
+
+    return fetch(API_BASE + url, {
+        method: "POST",
+        body: fd
+    }).then(r => {
+        if (!r.ok) throw new Error("API POST failure");
+        return r.json();
     });
 }
 
-function calculateValue() {
-    var total = 0;
-    $(".product-item").each(function( index ) {
-        var qty = parseFloat($(this).find('.product-qty').val());
-        var price = parseFloat($(this).find('#product_price').val());
-        price = price*qty;
-        $(this).find('#item_total').val(price.toFixed(2));
-        total += price;
-    });
-    $("#product_grand_total").val(total.toFixed(2));
+// DELETE request
+function apiDelete(url) {
+    return fetch(API_BASE + url, { method: "DELETE" })
+        .then(r => {
+            if (!r.ok) throw new Error("API DELETE failure");
+            return r.json();
+        });
 }
 
-function orderParser(order) {
-    return {
-        id : order.id,
-        date : order.employee_name,
-        orderNo : order.employee_name,
-        customerName : order.employee_name,
-        cost : parseInt(order.employee_salary)
-    }
+// Basic alert
+function toast(msg) {
+    alert(msg);
 }
-
-function productParser(product) {
-    return {
-        id : product.id,
-        name : product.employee_name,
-        unit : product.employee_name,
-        price : product.employee_name
-    }
-}
-
-function productDropParser(product) {
-    return {
-        id : product.id,
-        name : product.title
-    }
-}
-
-//To enable bootstrap tooltip globally
-// $(function () {
-//     $('[data-toggle="tooltip"]').tooltip()
-// });

@@ -1,76 +1,103 @@
-var productModal = $("#productModal");
-    $(function () {
 
-        //JSON data by API call
-        $.get(productListApiUrl, function (response) {
-            if(response) {
-                var table = '';
-                $.each(response, function(index, product) {
-                    table += '<tr data-id="'+ product.product_id +'" data-name="'+ product.name +'" data-unit="'+ product.uom_id +'" data-price="'+ product.price_per_unit +'">' +
-                        '<td>'+ product.name +'</td>'+
-                        '<td>'+ product.uom_name +'</td>'+
-                        '<td>'+ product.price_per_unit +'</td>'+
-                        '<td><span class="btn btn-xs btn-danger delete-product">Delete</span></td></tr>';
+$(function () {
+    const $tbody = $("table tbody");
+    const $modal = $("#productModal");
+
+    // Load products into table
+    function loadProducts() {
+        apiGet("/getProducts")
+            .then(products => {
+                $tbody.empty();
+
+                if (products.length === 0) {
+                    $tbody.append(`<tr><td colspan="4" class="text-center">No products yet</td></tr>`);
+                    return;
+                }
+
+                products.forEach(p => {
+                    $tbody.append(`
+                        <tr data-id="${p.product_id}">
+                            <td>${p.name}</td>
+                            <td>${p.uom_name}</td>
+                            <td>${p.price_per_unit.toFixed(2)}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger deleteProduct">Delete</button>
+                            </td>
+                        </tr>
+                    `);
                 });
-                $("table").find('tbody').empty().html(table);
-            }
-        });
-    });
+            })
+            .catch(err => {
+                console.error(err);
+                toast("Failed to load products");
+            });
+    }
 
-    // Save Product
+    // Load UOM select options
+    function loadUOMs() {
+        apiGet("/getUOM")
+            .then(uoms => {
+                const $uoms = $("#uoms");
+                $uoms.empty();
+                uoms.forEach(u =>
+                    $uoms.append(`<option value="${u.uom_id}">${u.uom_name}</option>`)
+                );
+            })
+            .catch(err => {
+                console.error(err);
+                toast("Failed to load units");
+            });
+    }
+
+    // Save product
     $("#saveProduct").on("click", function () {
-        // If we found id value in form then update product detail
-        var data = $("#productForm").serializeArray();
-        var requestPayload = {
-            product_name: null,
-            uom_id: null,
-            price_per_unit: null
-        };
-        for (var i=0;i<data.length;++i) {
-            var element = data[i];
-            switch(element.name) {
-                case 'name':
-                    requestPayload.product_name = element.value;
-                    break;
-                case 'uoms':
-                    requestPayload.uom_id = element.value;
-                    break;
-                case 'price':
-                    requestPayload.price_per_unit = element.value;
-                    break;
-            }
+        const name = $("#name").val().trim();
+        const uom_id = $("#uoms").val();
+        const price = parseFloat($("#price").val().trim());
+
+        if (!name || !uom_id || isNaN(price)) {
+            toast("Fill all fields correctly");
+            return;
         }
-        callApi("POST", productSaveApiUrl, {
-            'data': JSON.stringify(requestPayload)
-        });
-    });
 
-    $(document).on("click", ".delete-product", function (){
-        var tr = $(this).closest('tr');
-        var data = {
-            product_id : tr.data('id')
+        const payload = {
+            name,
+            uom_id: parseInt(uom_id),
+            price_per_unit: price
         };
-        var isDelete = confirm("Are you sure to delete "+ tr.data('name') +" item?");
-        if (isDelete) {
-            callApi("POST", productDeleteApiUrl, data);
-        }
+
+        apiPost("/addProduct", payload)
+            .then(() => {
+                toast("Product added");
+                $modal.modal("hide");
+                loadProducts();
+            })
+            .catch(err => {
+                console.error(err);
+                toast("Failed to save product");
+            });
     });
 
-    productModal.on('hide.bs.modal', function(){
-        $("#id").val('0');
-        $("#name, #unit, #price").val('');
-        productModal.find('.modal-title').text('Add New Product');
+    // Delete product
+    $(document).on("click", ".deleteProduct", function () {
+        const id = $(this).closest("tr").data("id");
+
+        if (!confirm("Delete this product?")) return;
+
+        apiDelete(`/deleteProduct/${id}`)
+            .then(() => {
+                toast("Deleted");
+                loadProducts();
+            })
+            .catch(err => {
+                console.error(err);
+                toast("Failed to delete");
+            });
     });
 
-    productModal.on('show.bs.modal', function(){
-        //JSON data by API call
-        $.get(uomListApiUrl, function (response) {
-            if(response) {
-                var options = '<option value="">--Select--</option>';
-                $.each(response, function(index, uom) {
-                    options += '<option value="'+ uom.uom_id +'">'+ uom.uom_name +'</option>';
-                });
-                $("#uoms").empty().html(options);
-            }
-        });
-    });
+    // Load UOM list when modal opens
+    $modal.on("show.bs.modal", loadUOMs);
+
+    // Initial load
+    loadProducts();
+});

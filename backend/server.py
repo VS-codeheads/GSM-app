@@ -1,9 +1,9 @@
 from flask import Flask, jsonify, request
-import products_dao
-import uom_dao
+import backend.dao.products_dao as products_dao
+import backend.dao.uom_dao as uom_dao
 import json
-import order_dao
-from sql_connection import get_sql_connection
+import backend.dao.order_dao as order_dao
+from backend.db.sql_connection import get_sql_connection
 
 app = Flask(__name__)
 

@@ -1,116 +1,94 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title> GSMS </title>
+    <title>GSMS – New Order</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes"/>
-    <meta name="csrf-token" content="kmapods5wQ5L1hn7rcR9OPst7EsN0gC7SrHh3m9K"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Icons + Bootstrap + CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,600,700">
-    <link media="all" type="text/css" rel="stylesheet" href="css/bootstrap.min.css">
-    <link media="all" type="text/css" rel="stylesheet" href="css/style.css?v=1.0">
-    <link media="all" type="text/css" rel="stylesheet" href="css/custom.css?v=1.3.3">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/sidebar-menu.css">
+    <link rel="stylesheet" href="css/custom.css">
 </head>
-<body class="tooltips">
-<div class="container">
 
-    <div class="header content rows-content-header">
-        <button class="button-menu-mobile show-sidebar">
-            <i class="fa fa-bars"></i>
-        </button>
-        <div class="navbar navbar-default" role="navigation">
-            <div class="container">
+<body>
 
-                <div class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav visible-lg visible-md limit-chars">
-                        <ul class="breadcrumb">
-                            <a href="index.html">
-                                <i class="zmdi zmdi-view-dashboard zmdi-hc-fw" data-toggle="tooltip" data-placement="bottom" title="Dashboard"></i>
-                            </a>
-                            <a href="manage-product.html">
-                                <i class="zmdi zmdi-assignment zmdi-hc-fw" data-toggle="tooltip" data-placement="bottom" title="Products"></i>
-                            </a>
-                        </ul>
-                    </ul>
-                </div>
-            </div>
-        </div>
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+        <h2>GSMS</h2>
+        <ul id="sidebar-menu">
+            <li><a href="index.html"><i class="zmdi zmdi-view-dashboard"></i> Dashboard</a></li>
+            <li><a href="manage-product.html"><i class="zmdi zmdi-assignment"></i> Products</a></li>
+            <li class="active"><a href="order.html"><i class="zmdi zmdi-shopping-cart"></i> New Order</a></li>
+        </ul>
     </div>
 
-    <div class="right content-page">
-        <div class="body content rows scroll-y">
-            <form action="">
-                <div class="box-info full" id="taskFormContainer">
-                    <h2>New Order
-                        <input name="customerName" id="customerName" type="text" class="form-control" placeholder="Customer Name" style="max-width:230px; float: right;margin-top: -11px">
-                    </h2>
-                    <div class="row" style="margin-bottom: 5px;margin-top: -10px;">
-                        <div class="col-sm-12">
-                            <div class="col-sm-4">
-                                <label >Product</label>
-                            </div>
-                            <div class="col-sm-3">
-                                <label >Price</label>
-                            </div>
-                            <div class="col-sm-2">
-                                <label >Quantity</label>
-                            </div>
-                            <div class="col-sm-3">
-                                <label >Total</label>
-                                <button class="btn btn-sm btn-primary pull-right" style="margin-top: -5px" type="button" id="addMoreButton">Add More</button>
-                            </div>
-                        </div>
+    <!-- CONTENT -->
+    <div id="content-area">
+        <div class="card-modern">
+
+            <h2>New Order</h2>
+
+            <div class="mb-3">
+                <input id="customerName" class="form-control" placeholder="Customer Name">
+            </div>
+
+            <!-- Order Row Header -->
+            <div class="row fw-bold mb-2">
+                <div class="col-sm-4">Product</div>
+                <div class="col-sm-3">Price</div>
+                <div class="col-sm-2">Qty</div>
+                <div class="col-sm-3">
+                    Total
+                    <button class="btn btn-primary btn-sm float-right" id="addMoreButton">Add More</button>
+                </div>
+            </div>
+
+            <div id="itemsInOrder"></div>
+
+            <!-- Summary -->
+            <div class="card-modern mt-3">
+                <div class="row">
+                    <div class="col-sm-9 text-right pt-2">
+                        <strong>Total:</strong>
                     </div>
-                </div>
-
-                <div class="product-box-extra" id="itemsInOrder">
-
-                </div>
-
-                <div>
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <div class="box-info full p-3 mb-3 mt-0">
-                                <div class="col-sm-9 text-right">
-                                    <span><b>Total</b></span>
-                                </div>
-                                <div class="col-sm-3">
-                                    <b><input id="product_grand_total" name="product_grand_total" class="product-grand-total" value="0.0"></input> Rs</b>
-                                    <button class="btn btn-sm btn-primary pull-right" type="button" id="saveOrder">Save</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </form>
-            <div class="product-box hidden">
-                <div class="row product-item">
-                    <div class="col-sm-12">
-                        <div class="box-info full p-3 mb-3 mt-0">
-                            <div class="col-sm-4">
-                                <select name="product" class="form-control cart-product" style="max-width: 250px"></select>
-                            </div>
-                            <div class="col-sm-3">
-                                <input id="product_price" name="product_price" class="product-price" value="0.0"></input>
-                            </div>
-                            <div class="col-sm-2">
-                                <input name="qty" type="number" min="1" placeholder="" class="form-control product-qty" value="1" style="max-width: 100px">
-                            </div>
-                            <div class="col-sm-3">
-                                <input id="item_total" name="item_total" class="product-total"></input><span> Rs</span>
-                                <button class="btn btn-sm btn-danger pull-right remove-row" type="button">Remove</button>
-                            </div>
-                        </div>
+                    <div class="col-sm-3">
+                        <input id="product_grand_total" class="form-control d-inline-block w-50" value="0.0" readonly> 
+                        <button class="btn btn-primary btn-sm float-right" id="saveOrder">Save</button>
                     </div>
                 </div>
             </div>
+
         </div>
+
+        <!-- Hidden Template -->
+        <div class="product-box d-none">
+            <div class="row product-item mb-2">
+                <div class="col-sm-4">
+                    <select class="form-control cart-product"></select>
+                </div>
+                <div class="col-sm-3">
+                    <input class="form-control product-price" readonly>
+                </div>
+                <div class="col-sm-2">
+                    <input type="number" class="form-control product-qty" value="1" min="1">
+                </div>
+                <div class="col-sm-3">
+                    <input class="form-control product-total d-inline-block w-50" readonly>
+                    <button class="btn btn-danger btn-sm remove-row float-right">Remove</button>
+                </div>
+            </div>
+        </div>
+
     </div>
-</div>
+
+    <!-- JS -->
+    <script src="js/packages/jquery.min.js"></script>
+    <script src="js/packages/bootstrap.min.js"></script>
+    <script src="js/custom/common.js"></script>
+    <script src="js/custom/order.js"></script>
+
 </body>
-<script src="js/packages/jquery.min.js"></script>
-<script src="js/custom/common.js"></script>
-<script src="js/custom/order.js"></script>
 </html>

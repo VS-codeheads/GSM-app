@@ -1,4 +1,4 @@
-from sql_connection import get_sql_connection
+from db.sql_connection import get_sql_connection
 
 def get_all_products(connection):
 
@@ -46,15 +46,12 @@ def insert_new_product(connection, product):
 def delete_product(connection, product_id):
     cursor = connection.cursor()
 
-    query = (
-        "DELETE FROM products WHERE product_id =" + str(product_id)
-    )
-
-    cursor.execute(query)
+    query = "DELETE FROM products WHERE product_id = %s"
+    cursor.execute(query, (product_id,))
 
     connection.commit()
-
     return cursor.rowcount
+
 
 if __name__ == "__main__":
     connection = get_sql_connection()
@@ -64,4 +61,3 @@ if __name__ == "__main__":
        # "uom_id": 1,
        # "price_per_unit": 9.99
     #}))
-    print(delete_product(connection, 11))
