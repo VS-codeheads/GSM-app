@@ -1,0 +1,253 @@
+{
+  "info": {
+    "name": "Grocery Store Manager (GSM)",
+    "_postman_id": "a4a9fe1e-c0a9-4e92-9b57-gsm12345",
+    "description": "Postman Collection for Grocery Store Manager (GSM)\nIncludes: Products, UOM, Orders\nCovers all functional API requirements + test scripts.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+
+  "item": [
+    {
+      "name": "Environment Setup",
+      "item": [
+        {
+          "name": "Set Base URL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "PRODUCTS",
+      "item": [
+
+        {
+          "name": "GET – Get all products",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/getProducts", "host": ["{{base_url}}"], "path": ["getProducts"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Response is array\", function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "POST – Add product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bananas\",\n  \"uom_id\": 1,\n  \"price_per_unit\": 12.95\n}"
+            },
+            "url": { "raw": "{{base_url}}/addProduct", "host": ["{{base_url}}"], "path": ["addProduct"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": [
+                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                "pm.test(\"Product ID exists\", () => pm.expect(pm.response.json().product_id).to.exist );"
+              ]}
+            }
+          ]
+        },
+
+        {
+          "name": "POST – Update product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": 1,\n  \"name\": \"Bananas\",\n  \"uom_id\": 1,\n  \"price_per_unit\": 15.00\n}"
+            },
+            "url": { "raw": "{{base_url}}/updateProduct", "host": ["{{base_url}}"], "path": ["updateProduct"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": [
+                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                "pm.test(\"Product updated\", () => pm.expect(pm.response.json().updated).to.be.true );"
+              ]}
+            }
+          ]
+        },
+
+        {
+          "name": "DELETE – Delete product",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/deleteProduct/1",
+              "host": ["{{base_url}}"],
+              "path": ["deleteProduct", "1"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": [
+                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+              ]}
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "UOM",
+      "item": [
+        {
+          "name": "GET – Get all UOM values",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/getUOM", "host": ["{{base_url}}"], "path": ["getUOM"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": [
+                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                "pm.test(\"UOM list is array\", () => pm.expect(pm.response.json()).to.be.an('array'));"
+              ]}
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "ORDERS",
+      "item": [
+
+        {
+          "name": "GET – Get all orders",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/getOrders", "host": ["{{base_url}}"], "path": ["getOrders"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": [
+                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                "pm.test(\"Response is array\", () => pm.expect(pm.response.json()).to.be.an('array'));"
+              ]}
+            }
+          ]
+        },
+
+        {
+          "name": "POST – Add order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_name\": \"John Doe\",\n  \"total_price\": 39.90,\n  \"datetime\": \"2025-12-03 12:00:00\",\n  \"order_details\": [\n    {\"product_id\": 1, \"quantity\": 2, \"total_price\": 19.95},\n    {\"product_id\": 2, \"quantity\": 1, \"total_price\": 19.95}\n  ]\n}"
+            },
+            "url": { "raw": "{{base_url}}/addOrder", "host": ["{{base_url}}"], "path": ["addOrder"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": [
+                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                "pm.test(\"Order ID exists\", () => pm.expect(pm.response.json().order_id).to.exist );"
+              ]}
+            }
+          ]
+        },
+
+        {
+          "name": "GET – Get order",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/getOrder/1",
+              "host": ["{{base_url}}"],
+              "path": ["getOrder","1"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": [
+                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+              ]}
+            }
+          ]
+        },
+
+        {
+          "name": "GET – Get order details",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/getOrderDetails/1",
+              "host": ["{{base_url}}"],
+              "path": ["getOrderDetails", "1"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": [
+                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+              ]}
+            }
+          ]
+        },
+
+        {
+          "name": "DELETE – Delete order",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/deleteOrder/1",
+              "host": ["{{base_url}}"],
+              "path": ["deleteOrder", "1"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": [
+                "pm.test(\"Deleted OK\", () => pm.response.to.have.status(200));"
+              ]}
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000"
+    }
+  ]
+}
