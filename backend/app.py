@@ -11,7 +11,7 @@ from db.sql_connection import get_sql_connection
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/*": {"origins": ["http://localhost:8000", "http://127.0.0.1:8000"]}})
+CORS(app)
 
 @app.after_request
 def add_cors_headers(response):
@@ -99,14 +99,18 @@ def api_update_product():
 
     cursor.execute("""
         UPDATE products
-        SET name=%s, uom_id=%s, price_per_unit=%s
+        SET name=%s, uom_id=%s, price_per_unit=%s, quantity=%s
         WHERE product_id=%s
-    """, (product["name"], product["uom_id"], product["price_per_unit"], product["product_id"]))
+    """, (
+        product["name"],
+        product["uom_id"],
+        product["price_per_unit"],
+        product["quantity"],
+        product["product_id"]
+    ))
 
     conn.commit()
     return jsonify({"updated": True})
-
-
 
 
 # -----------------------

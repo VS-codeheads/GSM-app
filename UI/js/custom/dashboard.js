@@ -1,4 +1,42 @@
 
+// ------------------------
+// WEATHER WIDGET
+// ------------------------
+function loadWeather() {
+    const API_KEY = "6b4b1400888cfc29ec5a3d7dd73be8d6";
+    const CITY = "Copenhagen";
+
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${CITY}&units=metric&appid=${API_KEY}`;
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (data.cod !== 200) {
+                $("#weatherContent").html("Failed to load weather.");
+                return;
+            }
+
+            const temp = data.main.temp;
+            const cond = data.weather[0].description;
+            const icon = data.weather[0].icon;
+
+            $("#weatherContent").html(`
+                <div class="d-flex align-items-center">
+                    <img src="https://openweathermap.org/img/wn/${icon}@2x.png" />
+                    <div class="ms-3">
+                        <h5 class="m-0">${CITY}</h5>
+                        <div>${temp}°C – ${cond}</div>
+                    </div>
+                </div>
+            `);
+        })
+        .catch(() => {
+            $("#weatherContent").html("Weather unavailable.");
+        });
+}
+
+
+
 $(function () {
     const $tbody = $("#ordersTableBody");
 
@@ -37,6 +75,7 @@ $(function () {
     }
 
     loadOrders();
+    loadWeather();
 
     // Click an order row which opens details modal
     $(document).on("click", ".order-row", function () {

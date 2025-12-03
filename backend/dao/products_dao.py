@@ -14,6 +14,7 @@ def get_all_products(connection):
             p.name,
             p.uom_id,
             p.price_per_unit,
+            p.quantity,
             u.uom_name
         FROM products p
         INNER JOIN uom u ON p.uom_id = u.uom_id
@@ -24,12 +25,13 @@ def get_all_products(connection):
     cursor.execute(query)
 
     response = []
-    for (product_id, name, uom_id, price_per_unit, uom_name) in cursor:
+    for (product_id, name, uom_id, price_per_unit, quantity, uom_name) in cursor:
         response.append({
             "product_id": product_id,
             "name": name,
             "uom_id": uom_id,
             "price_per_unit": float(price_per_unit),
+            "quantity": quantity,
             "uom_name": uom_name
         })
 
@@ -43,14 +45,15 @@ def insert_new_product(connection, product):
     cursor = connection.cursor()
 
     query = """
-        INSERT INTO products (name, uom_id, price_per_unit)
-        VALUES (%s, %s, %s)
+        INSERT INTO products (name, uom_id, price_per_unit, quantity)
+        VALUES (%s, %s, %s, %s)
     """
 
     data = (
         product["name"],
         int(product["uom_id"]),
-        float(product["price_per_unit"])
+        float(product["price_per_unit"]),
+        int(product["quantity"])
     )
 
     cursor.execute(query, data)
@@ -84,7 +87,8 @@ def update_product(connection, product):
         SET 
             name = %s,
             uom_id = %s,
-            price_per_unit = %s
+            price_per_unit = %s,
+            quantity = %s
         WHERE product_id = %s
     """
 
@@ -92,6 +96,7 @@ def update_product(connection, product):
         product["name"],
         int(product["uom_id"]),
         float(product["price_per_unit"]),
+        int(product["quantity"]),
         int(product["product_id"])
     )
 

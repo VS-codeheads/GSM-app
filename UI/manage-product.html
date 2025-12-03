@@ -52,7 +52,7 @@
                         <th>Name</th>
                         <th>Unit</th>
                         <th>Price Per Unit</th>
-                        <th style="width: 150px;">Action</th>
+                        <th style="width: 150px;">Quantity</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -83,7 +83,10 @@
                         <select class="form-control mb-3" id="uoms" name="uoms"></select>
 
                         <label>Price Per Unit</label>
-                        <input class="form-control mb-3" id="price" name="price">
+                        <input class="form-control mb-3" id="price" name="price" type="number">
+
+                        <label>Quantity</label>
+                        <input class="form-control mb-3" id="qty" name="quantity" type="number" min="0">
 
                     </form>
                 </div>
