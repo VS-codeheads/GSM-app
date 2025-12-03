@@ -1,63 +1,93 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>GSMS - Dashboard</title>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSMS – Dashboard</title>
 
-    <!--  Icons + Fonts  -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Bootstrap + CSS -->
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/sidebar-menu.css">
+    <!-- Custom Theme -->
     <link rel="stylesheet" href="css/custom.css">
 </head>
 
 <body>
 
-    <!-- SIDEBAR -->
-    <div id="sidebar">
-        <h2>GSMS</h2>
-        <ul id="sidebar-menu">
-            <li class="active"><a href="index.html"><i class="zmdi zmdi-view-dashboard"></i> Dashboard</a></li>
-            <li><a href="manage-product.html"><i class="zmdi zmdi-assignment"></i> Products</a></li>
-            <li
-        </ul>
-    </div>
-</body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold text-success" href="index.html">GSMS</a>
 
-    <!-- MAIN CONTENT -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="index.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="manage-product.html">Products</a></li>
+                    <li class="nav-item"><a class="nav-link" href="order.html">New Order</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENT -->
     <div id="content-area">
         <div class="card-modern">
-            <h2>Grocery Store Management System</h1>
 
-            <div class="d-flex md-3">
-                <a href="order.html" class="btn btn-primary btn-sm me-2">New Order</a>
+            <h2 class="mb-3">Orders Overview</h2>
+
+            <div class="mb-4">
+                <a href="order.html" class="btn btn-primary btn-sm me-2">+ New Order</a>
                 <a href="manage-product.html" class="btn btn-primary btn-sm">Manage Products</a>
             </div>
-        
+
             <table class="table table-modern table-bordered">
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Order Number</th>
-                        <th>Customer Name</th>
-                        <th>Total Cost</th>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Total</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Filled by JS -->
+                <tbody id="ordersTableBody">
+                    <!-- Filled via JS -->
                 </tbody>
             </table>
+
         </div>
     </div>
 
-    <!-- SCRIPTS -->
+    <!-- ORDER DETAILS MODAL -->
+    <div class="modal fade" id="orderDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Order Details</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="detailsContent"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button id="deleteOrderBtn" class="btn btn-danger">Delete</button>
+                    <button id="editOrderBtn" class="btn btn-primary">Edit</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/packages/jquery.min.js"></script>
-    <script src="js/packages/bootstrap.min.js"></script>
     <script src="js/custom/common.js"></script>
     <script src="js/custom/dashboard.js"></script>
 
