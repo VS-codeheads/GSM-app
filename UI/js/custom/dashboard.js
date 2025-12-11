@@ -1,4 +1,3 @@
-
 // ------------------------
 // WEATHER WIDGET
 // ------------------------
@@ -137,7 +136,6 @@ $(function () {
                 });
 
                 $("#editOrderBtn").off("click").on("click", function () {
-                    // navigate to order page with id to editing
                     window.location.href = `order.html?id=${orderId}`;
                 });
 
