@@ -6,23 +6,29 @@ This README explains how to fully set up the database, backend, and frontend of 
 
 Before starting, install:
 
-*Backend*  :
+* Python 3.10+
 
-* Python 3.10–3.12
+* MySQL Server 8+
 
-* pip
+* MySQL Workbench (optional, for visual inspection)
 
-* virtualenv 
+* pip (Python package manager)
 
-*Database*:
 
-* MySQL 8.x 
+## Install Python Environment
 
-*Frontend*:
+Inside the project folder:
 
-* Any browser
+```bash
+python3 -m venv venv
+source venv/bin/activate     # macOS / Linux
+venv\Scripts\activate        # Windows
+```
 
-* VS Code 
+Install required packages:
+```bash
+pip install -r requirements.txt
+```
 
 ## Project structure
 
@@ -53,170 +59,160 @@ GSM-app/
     └── ...
 ```
 
-## Project structure
+## Configure MySQL Access
 
-Create the database on your local MySQL Workbench
-
-1. Create the database and the required tables
-
-Use the create script in the sql_scripts folder.
-
-2. Seed the tables 
-
-Use the sample data from seed script in the swl_scripts folder.
-
-Or 
-
-Run the seed script using:
-```bash
-mysql -u root -p grocery_store < backend/seed.sql
+The database initializer uses these default settings:
+```yaml
+host: localhost
+user: root
+password: (empty)
+port: 3306
+database: grocery_store
 ```
 
-## Configure Backend SQL Connection
-
-Open:
+If your MySQL user has a password, update this file:
 ```bash
-backend/db/sql_connection.py
+backend/db/initialize_sql.py
 ```
 
-Remember to update your credentials:
-```bash
-import mysql.connector
-
-def get_sql_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="YOUR_PASSWORD_HERE",
-        database="grocery_store"
-    )
+Modify:
+```python
+MYSQL_USER = "root"
+MYSQL_PASS = ""
 ```
 
-## Backend Setup & Run
+## Initialize + Seed the Database (Automatic)
 
-*Step 1 — Create venv*
+Your project includes a full database initializer:
 ```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate   # macOS/Linux
-venv\Scripts\activate      # Windows
+backend/db/initialize_sql.py
 ```
 
-*Step 2 — Install requirements*
+This script will:
+
+* Create database grocery_store
+* Create all tables
+* Reset all tables safely
+* Insert UOMs
+* Insert example products
+* Insert example orders & order details
+
+Run it:
 ```bash
-backend/requirements.txt
+python backend/db/initialize_sql.py
 ```
 
-with:
+You should see output like:
+
+* Connected to MySQL
+* Database ready
+* Tables created
+* All tables cleared and counters reset
+* UOMs inserted
+* Products inserted
+* Sample orders inserted
+
+If you see and error, it will explain the exact issue.
+
+
+##Run the Backend (Flask API)
+
+From the project root:
 ```bash
-flask
-flask-cors
-mysql-connector-python
+python backend/app.py
 ```
 
-Then run:
-```bash
-pip install -r requirements.txt
-```
-
-*Step 3 — Start the API server*
-```bash
-python app.py
-```
-
-*The API will now run at:*
+Server starts at:
 
 * http://localhost:5000
 
 
-## Frontend Setup & Run
+You should see:
+```nginx
+Starting Flask API on http://localhost:5000
+```
 
-The UI folder is static HTML/JS.
 
-To run it locally, open an HTML page directly or run a lightweight server:
+## Run the Frontend
 
-Option 1 - Double click index.html
-
-* Works but JS imports may restrict CORS on some browsers.
-
-Option 2 — Run local HTTP server 
-
-Inside UI folder:
+No build tools required — just open:
 ```bash
-python3 -m http.server 8000
+UI/index.html
 ```
 
-Open:
-
-* http://localhost:8000/index.html
-
-
-## Testing checklist
-
-After setup, you should test:
-
-* Product management
-
-    * Add product
-
-    * Edit product
-
-    * Delete product
-
-    * Quantity updates
-
-* Order management
-
-    * Create order
-
-    * Edit order
-
-    * Delete order
-
-    * View order details
-
-* External API
-
-    * Weather widget loads
-
-* Revenue analytics
-
-    * Total revenue
-
-    * Date range revenue
-
-    * Revenue by product
-
-
-## Common Issues & Fixes
-* “Failed to load products/orders”
-
-Backend not running → Start with
+or if the folder is named differently:
 ```bash
-python app.py
+frontend/index.html
 ```
 
-* Wrong MySQL password
+Make sure the browser is allowed to load local JS files.
 
-Update file:
 
-```bash
-backend/db/sql_connection.py
+## API Endpoints
+
+Products
+
+| Method | Endpoint              | Description           |
+| ------ | --------------------- | --------------------- |
+| GET    | `/getProducts`        | List all products     |
+| POST   | `/addProduct`         | Add new product       |
+| POST   | `/updateProduct`      | Update a product      |
+| DELETE | `/deleteProduct/<id>` | Delete a product      |
+| GET    | `/getUOM`             | List units of measure |
+
+Orders
+
+| Method | Endpoint                | Description            |
+| ------ | ----------------------- | ---------------------- |
+| GET    | `/getOrders`            | List all orders        |
+| GET    | `/getOrder/<id>`        | Single order + items   |
+| GET    | `/getOrderDetails/<id>` | Order item breakdown   |
+| POST   | `/addOrder`             | Create or update order |
+| DELETE | `/deleteOrder/<id>`     | Remove an order        |
+
+
+## Weather Widget (External API)
+
+In dashboard.js, replace:
+```js
+const API_KEY = "YOUR_API_KEY_HERE";
 ```
 
-* CORS issues
+with your OpenWeather key.
 
-You already enabled:
-```python
-CORS(app)
-```
+Get one free from:
 
-So shouldn’t be a problem.
+* https://openweathermap.org/api
 
-* 404 on delete/edit
 
-Usually caused by:
+## Testing Instructions (Not done)
 
-    * Wrong URL
+### Black-box test scenarios
 
-    * Backend not restarted after changes
+(username, product flow, order flow)
+
+### Postman API collection
+
+All endpoints can be tested with GET/POST/DELETE.
+
+### Selenium E2E UI tests
+
+Recommended:
+
+Open dashboard
+
+Create order
+
+Edit order
+
+Delete order
+
+Add product
+
+Edit product
+
+Delete product
+
+### JMeter performance test
+
+Test GET /getOrders under load (50–200 users)
