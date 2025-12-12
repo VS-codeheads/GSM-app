@@ -5,22 +5,20 @@ import json
 from dao.products_dao import get_all_products, insert_new_product, delete_product, update_product
 from dao.uom_dao import get_all_uoms
 from dao.order_dao import add_order
-from dao.order_list_dao import get_all_orders
+from dao.order_list_dao import get_all_orders, get_recent_orders
 from dao.order_details_dao import get_order_details
 from db.sql_connection import get_sql_connection
+from routes.calculations import calculations_bp
 
 app = Flask(__name__)
 
-CORS(app)
+CORS(
+    app,
+    supports_credentials=True,
+    resources={r"/*": {"origins": ["http://localhost:8000", "http://127.0.0.1:8000"]}}
+)
 
-@app.after_request
-def add_cors_headers(response):
-    # Already handled by flask_cors for normal cases — this is a safe fallback.
-    response.headers.setdefault("Access-Control-Allow-Origin", "http://localhost:8000")
-    response.headers.setdefault("Access-Control-Allow-Credentials", "true")
-    response.headers.setdefault("Access-Control-Allow-Headers", "Content-Type,Authorization")
-    response.headers.setdefault("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
-    return response
+app.register_blueprint(calculations_bp, url_prefix="/api")
 
 
 def connection():
@@ -58,6 +56,7 @@ def parse_incoming_json():
 def api_get_products():
     conn = connection()
     products = get_all_products(conn)
+    conn.close()
     return jsonify(products)
 
 
@@ -69,6 +68,7 @@ def api_add_product():
 
     conn = connection()
     new_id = insert_new_product(conn, product)
+    conn.close()
     return jsonify({"product_id": new_id})
 
 
@@ -84,6 +84,7 @@ def api_delete_product(product_id):
     cursor.execute("DELETE FROM products WHERE product_id = %s", (product_id,))
 
     conn.commit()
+    conn.close()
     return jsonify({"deleted": product_id})
 
 
@@ -95,6 +96,7 @@ def api_update_product():
 
     product = json.loads(raw)
     conn = connection()
+    conn.close()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -110,6 +112,7 @@ def api_update_product():
     ))
 
     conn.commit()
+    conn.close()
     return jsonify({"updated": True})
 
 
@@ -120,6 +123,7 @@ def api_update_product():
 def api_get_uom():
     conn = connection()
     uoms = get_all_uoms(conn)
+    conn.close()
     return jsonify(uoms)
 
 
@@ -158,6 +162,7 @@ def api_add_order():
         app.logger.exception("Failed to add order")
         return jsonify({"error": "Failed to add order", "detail": str(e)}), 500
 
+    conn.close()
     return jsonify({"order_id": order_id})
 
 
@@ -165,6 +170,24 @@ def api_add_order():
 def api_get_orders():
     conn = connection()
     orders = get_all_orders(conn)
+    conn.close()
+    return jsonify(orders)
+
+
+@app.route("/getRecentOrders", methods=["GET"])
+def api_get_recent_orders():
+    conn = connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT order_id, customer_name, total_price, datetime
+        FROM orders
+        ORDER BY datetime DESC
+        LIMIT 5
+    """)
+
+    orders = cursor.fetchall()
+    conn.close()
     return jsonify(orders)
 
 
@@ -189,6 +212,7 @@ def api_get_order(order_id):
 
     items = cursor.fetchall()
     order["items"] = items
+    conn.close()
     return jsonify(order)
 
 
@@ -196,6 +220,7 @@ def api_get_order(order_id):
 def api_order_details(order_id):
     conn = connection()
     details = get_order_details(conn, order_id)
+    conn.close()
     return jsonify(details)
 
 
@@ -206,6 +231,7 @@ def api_delete_order(order_id):
     cursor.execute("DELETE FROM order_details WHERE order_id = %s", (order_id,))
     cursor.execute("DELETE FROM orders WHERE order_id = %s", (order_id,))
     conn.commit()
+    conn.close()
     return jsonify({"deleted": order_id})
 
 

@@ -1,4 +1,5 @@
 let editingProductId = null;
+let cachedProducts = [];
 
 $(function () {
 
@@ -7,7 +8,7 @@ $(function () {
     loadUOMs().then(loadProducts);
 
     // -------------------------------
-    // Load Units
+    // Load Units (UOM)
     // -------------------------------
     function loadUOMs() {
         return apiGet("/getUOM").then(uoms => {
@@ -20,28 +21,52 @@ $(function () {
     }
 
     // -------------------------------
-    // Load Products Into Table
+    // Render Products
+    // -------------------------------
+    function renderProducts(list) {
+        $tbody.empty();
+
+        list.forEach(p => {
+            $tbody.append(`
+                <tr>
+                    <td>${p.name}</td>
+                    <td>${p.uom_name}</td>
+                    <td>${p.price_per_unit.toFixed(2)}</td>
+                    <td>${p.quantity}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm edit-btn" data-id="${p.product_id}">Edit</button>
+                        <button class="btn btn-danger btn-sm delete-btn" data-id="${p.product_id}">Delete</button>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+
+    // -------------------------------
+    // Load Products
     // -------------------------------
     function loadProducts() {
         apiGet("/getProducts").then(products => {
-            $tbody.empty();
-
-            products.forEach(p => {
-                $tbody.append(`
-                    <tr>
-                        <td>${p.name}</td>
-                        <td>${p.uom_name}</td>
-                        <td>${p.price_per_unit.toFixed(2)}</td>
-                        <td>${p.quantity}</td>
-                        <td>
-                            <button class="btn btn-warning btn-sm edit-btn" data-id="${p.product_id}">Edit</button>
-                            <button class="btn btn-danger btn-sm delete-btn" data-id="${p.product_id}">Delete</button>
-                        </td>
-                    </tr>
-                `);
-            });
+            cachedProducts = products;
+            renderProducts(products);
         });
     }
+
+    // -------------------------------
+    // SEARCH BAR
+    // -------------------------------
+    $("#productSearch").on("input", function () {
+        const q = $(this).val().toLowerCase();
+
+        const filtered = cachedProducts.filter(p =>
+            p.name.toLowerCase().includes(q) ||
+            p.uom_name.toLowerCase().includes(q) ||
+            String(p.price_per_unit).includes(q) ||
+            (p.quantity != undefined && String(q.quantity).includes(q))
+        );
+
+        renderProducts(filtered);
+    });
 
     // -------------------------------
     // OPEN EDIT MODAL
@@ -60,8 +85,7 @@ $(function () {
             $(".modal-title").text("Edit Product");
             $("#saveProduct").text("Update");
 
-            const modal = new bootstrap.Modal(document.getElementById("productModal"));
-            modal.show();
+            new bootstrap.Modal("#productModal").show();
         });
     });
 
@@ -87,10 +111,7 @@ $(function () {
 
         apiPost(url, payload)
             .then(() => {
-                const modalEl = document.getElementById("productModal");
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                modal.hide();
-
+                bootstrap.Modal.getInstance("#productModal").hide();
                 editingProductId = null;
                 loadProducts();
             })
@@ -109,5 +130,4 @@ $(function () {
             .then(() => loadProducts())
             .catch(err => console.error(err));
     });
-
 });

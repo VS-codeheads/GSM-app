@@ -26,10 +26,10 @@ UOMS = [
 ]
 
 PRODUCTS = [
-    ("Apple", 1, 3.00, 100),
-    ("Orange", 1, 6.00, 80),
-    ("Toothpaste", 2, 20.00, 40),
-    ("Milk", 3, 12.00, 50)
+    ("Apple", 1, 1.50, 3.00, 100),
+    ("Orange", 1, 3.00, 6.00, 80),
+    ("Toothpaste", 2, 10.00, 20.00, 40),
+    ("Milk", 3, 6.00, 12.00, 50)
 ]
 
 ORDERS = [
@@ -86,6 +86,7 @@ def main():
                 name VARCHAR(100) NOT NULL,
                 uom_id INT NOT NULL,
                 price_per_unit DOUBLE NOT NULL,
+                selling_price DOUBLE NOT NULL DEFAULT 0,
                 quantity INT NOT NULL DEFAULT 0,
                 FOREIGN KEY (uom_id) REFERENCES uom(uom_id)
             );
@@ -151,8 +152,8 @@ def main():
         # -----------------------------------
         print("Seeding products...")
         cursor.executemany("""
-            INSERT INTO products (name, uom_id, price_per_unit, quantity)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO products (name, uom_id, price_per_unit, selling_price, quantity)
+            VALUES (%s, %s, %s, %s, %s)
         """, PRODUCTS)
         conn.commit()
         print("Products inserted")

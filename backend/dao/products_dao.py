@@ -112,12 +112,4 @@ def update_product(connection, product):
 if __name__ == "__main__":
     connection = get_sql_connection()
 
-    # Test: get all
-    # print(get_all_products(connection))
 
-    # Test: insert
-    # print(insert_new_product(connection, {
-    #     "name": "Test Product",
-    #     "uom_id": 1,
-    #     "price_per_unit": 99.99
-    # }))

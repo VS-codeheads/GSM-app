@@ -24,7 +24,7 @@ $(function () {
 
         const $select = $row.find(".cart-product");
         $select.empty();
-        $select.append(`<option value="">--Select--</option>`);
+        $select.append("<option value=\"\">--Select--</option>");
 
         products.forEach(p => {
             $select.append(`
@@ -146,7 +146,7 @@ $(function () {
 
     // Load order for editing
     function loadExistingOrder(orderId) {
-        return apiGet(`/getOrder/${orderId}`)
+        return apiGet("/getOrder/${orderId}")
             .then(order => {
                 if (!order) throw new Error("Order not found");
 
