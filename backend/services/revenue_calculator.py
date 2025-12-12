@@ -19,7 +19,14 @@ def calculate_revenue_and_profit(
     Products must include name, quantity (stock), price_per_unit (buying price) and selling_price (sell price)
     """
 
+    # Validate days
+    if not isinstance(days, int) or days <= 0:
+        raise ValueError("days must be a positive integer")
+
+    # Validate seed
     if seed is not None:
+        if not isinstance(seed, int) or seed <= 0:
+            raise ValueError("seed must be a positive integer or None")
         random.seed(seed)
 
     total_revenue = 0
@@ -27,6 +34,7 @@ def calculate_revenue_and_profit(
     total_units_sold = 0
     details = []
 
+    # make calculations for each product
     for p in products:
         stock = p["quantity"]
         buy_price = p["price_per_unit"]
@@ -35,6 +43,7 @@ def calculate_revenue_and_profit(
 
         sold_total = 0
 
+        # Generate daily sales
         for _ in range(days):
             sales_today = generate_random_sales(stock)
             sold_total += sales_today
