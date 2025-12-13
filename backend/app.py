@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import json
 
-from .dao.products_dao import get_all_products, insert_new_product, update_product
+from .dao.products_dao import get_all_products, insert_new_product, update_product, delete_product
 from .dao.uom_dao import get_all_uoms
 from .dao.order_dao import add_order
 from .dao.order_list_dao import get_all_orders, get_recent_orders
@@ -90,6 +90,20 @@ def api_add_product():
     conn.close()
     return jsonify({"product_id": new_id}), 200
 
+@app.route("/deleteProduct/<int:product_id>", methods=["DELETE"])
+def api_delete_product(product_id):
+    conn = connection()
+    cursor = conn.cursor()
+
+    # First delete rows referencing the product
+    cursor.execute("DELETE FROM order_details WHERE product_id = %s", (product_id,))
+
+    # Then delete the product
+    cursor.execute("DELETE FROM products WHERE product_id = %s", (product_id,))
+
+    conn.commit()
+    conn.close()
+    return jsonify({"deleted": product_id})
 
 @app.route("/updateProduct", methods=["POST"])
 def api_update_product():
