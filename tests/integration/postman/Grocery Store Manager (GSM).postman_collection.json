@@ -1,0 +1,423 @@
+{
+	"info": {
+		"_postman_id": "6e03db01-0989-4be3-81dc-7667c3c06dc5",
+		"name": "Grocery Store Manager (GSM)",
+		"description": "Postman Collection for Grocery Store Manager (GSM)\nIncludes: Products, UOM, Orders\nCovers all functional API requirements + test scripts.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48703668",
+		"_collection_link": "https://sofieamalie44-271399.postman.co/workspace/Sofie's-Workspace~8f74f99a-cd22-4399-8240-ec7f80ffab71/collection/48703668-6e03db01-0989-4be3-81dc-7667c3c06dc5?action=share&source=collection_link&creator=48703668"
+	},
+	"item": [
+		{
+			"name": "Environment Setup",
+			"item": [
+				{
+					"name": "Set Base URL",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}",
+							"host": [
+								"{{base_url}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "PRODUCTS",
+			"item": [
+				{
+					"name": "GET – Get all products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Response is array\", function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/getProducts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"getProducts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST – Add product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Product ID exists\", () => pm.expect(pm.response.json().product_id).to.exist );"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Bananas\",\n  \"uom_id\": 1,\n  \"price_per_unit\": 12.95\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/addProduct",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"addProduct"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST – Update product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Product updated\", () => pm.expect(pm.response.json().updated).to.be.true );"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_id\": 1,\n  \"name\": \"Bananas\",\n  \"uom_id\": 1,\n  \"price_per_unit\": 15.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/updateProduct",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"updateProduct"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE – Delete product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/deleteProduct/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"deleteProduct",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "UOM",
+			"item": [
+				{
+					"name": "GET – Get all UOM values",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"UOM list is array\", () => pm.expect(pm.response.json()).to.be.an('array'));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/getUOM",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"getUOM"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ORDERS",
+			"item": [
+				{
+					"name": "GET – Get all orders",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Response is array\", () => pm.expect(pm.response.json()).to.be.an('array'));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/getOrders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"getOrders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST – Add order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Order ID exists\", () => pm.expect(pm.response.json().order_id).to.exist );"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customer_name\": \"John Doe\",\n  \"total_price\": 39.90,\n  \"datetime\": \"2025-12-03 12:00:00\",\n  \"order_details\": [\n    {\"product_id\": 1, \"quantity\": 2, \"total_price\": 19.95},\n    {\"product_id\": 2, \"quantity\": 1, \"total_price\": 19.95}\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/addOrder",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"addOrder"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET – Get order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/getOrder/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"getOrder",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET – Get order details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/getOrderDetails/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"getOrderDetails",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE – Delete order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Deleted OK\", () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/deleteOrder/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"deleteOrder",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "New Folder",
+			"item": [
+				{
+					"name": "test spend cal",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"year\": 2025,\n  \"month\": 1,\n  \"orders\": [\n    {\n      \"date\": \"2025-01-03\",\n      \"qty\": 5,\n      \"cost\": 3.5,\n      \"category\": \"Fruit\"\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:5000/api/calc/spend",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"calc",
+								"spend"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "test revenue cal",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:5000"
+		}
+	]
+}

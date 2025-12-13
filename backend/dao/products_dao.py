@@ -106,9 +106,6 @@ def update_product(connection, product):
     return cursor.rowcount
 
 
-# -------------------------------------------------------
-# DEBUG RUN
-# -------------------------------------------------------
 if __name__ == "__main__":
     connection = get_sql_connection()
 

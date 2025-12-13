@@ -136,7 +136,7 @@ def test_valid_days(days):
 # -----------------------------
 @pytest.mark.parametrize("days", [0, -1, -10, 1.5, "abc", None])
 def test_invalid_days_raises(days):
-    """EP - invalid days input should raise ValueError."""
+    """EP - invalid days input should raise ValueError"""
     products = [{
         "name": "Test",
         "quantity": 10,
@@ -153,7 +153,7 @@ def test_invalid_days_raises(days):
 # -----------------------------
 @pytest.mark.parametrize("seed", [None, 1, 5, 99999])
 def test_valid_seeds(seed):
-    """EP/BVA - valid seeds accepted."""
+    """EP/BVA - valid seeds accepted"""
     products = [{
         "name": "Test",
         "quantity": 10,
@@ -171,7 +171,7 @@ def test_valid_seeds(seed):
 # -----------------------------
 @pytest.mark.parametrize("seed", [-1, -5, "abc", 3.14, [], {}])
 def test_invalid_seed_raises(seed):
-    """EP - invalid seed input must raise ValueError."""
+    """EP - invalid seed input must raise ValueError"""
     products = [{
         "name": "Test",
         "quantity": 10,

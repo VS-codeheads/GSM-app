@@ -3,9 +3,6 @@ from datetime import datetime
 def add_order(connection, order):
     cursor = connection.cursor(dictionary=True)
 
-    # -----------------------------------------------------
-    # EDITING ORDER → RESTORE previous stock + delete items
-    # -----------------------------------------------------
     if order.get("order_id"):
         order_id = int(order["order_id"])
 
@@ -39,9 +36,6 @@ def add_order(connection, order):
         ))
 
     else:
-        # -----------------------------------------------------
-        # NEW ORDER
-        # -----------------------------------------------------
         cursor.execute("""
             INSERT INTO orders (customer_name, total_price, datetime)
             VALUES (%s, %s, %s)
@@ -52,9 +46,7 @@ def add_order(connection, order):
         ))
         order_id = cursor.lastrowid
 
-    # -----------------------------------------------------
-    # INSERT NEW ITEMS + REDUCE STOCK
-    # -----------------------------------------------------
+
     for item in order["order_details"]:
         cursor.execute("""
             INSERT INTO order_details (order_id, product_id, quantity, total_price)

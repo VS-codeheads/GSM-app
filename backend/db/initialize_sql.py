@@ -4,6 +4,7 @@ Creates the grocery_store database, tables, and seeds initial data.
 
 import mysql.connector
 from mysql.connector import Error
+from sql_connection import get_sql_connection
 
 # -----------------------------------
 # CONFIGURE CONNECTION

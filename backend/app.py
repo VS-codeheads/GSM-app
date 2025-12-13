@@ -10,7 +10,6 @@ from .dao.order_details_dao import get_order_details
 from .db.sql_connection import get_sql_connection
 from .routes.calculations import calculations_bp
 
-
 # -------------------------------------------------------
 # Flask App Setup
 # -------------------------------------------------------
@@ -48,12 +47,12 @@ def parse_incoming_json():
 
     Returns dict or None.
     """
-    # 1. JSON body
+    # JSON body
     body = request.get_json(silent=True)
     if body:
         return body
 
-    # 2. Form fallback
+    # Form fallback
     raw_data = request.form.get("data")
     if raw_data:
         try:
@@ -93,17 +92,14 @@ def api_add_product():
 @app.route("/deleteProduct/<int:product_id>", methods=["DELETE"])
 def api_delete_product(product_id):
     conn = connection()
-    cursor = conn.cursor()
+    try:
+        delete_product(conn, product_id)
+    except Exception as e:
+        conn.close()
+        return jsonify({"error": "Failed to delete product", "detail": str(e)}), 500
 
-    # First delete rows referencing the product
-    cursor.execute("DELETE FROM order_details WHERE product_id = %s", (product_id,))
-
-    # Then delete the product
-    cursor.execute("DELETE FROM products WHERE product_id = %s", (product_id,))
-
-    conn.commit()
     conn.close()
-    return jsonify({"deleted": product_id})
+    return jsonify({"deleted": product_id}), 200
 
 @app.route("/updateProduct", methods=["POST"])
 def api_update_product():
@@ -116,24 +112,12 @@ def api_update_product():
         return jsonify({"error": "Missing required fields"}), 400
 
     conn = connection()
-    cursor = conn.cursor()
+    try:
+        update_product(conn, product)
+    except Exception as e:
+        conn.close()
+        return jsonify({"error": "Failed to update product", "detail": str(e)}), 500
 
-    cursor.execute(
-        """
-        UPDATE products
-        SET name=%s, uom_id=%s, price_per_unit=%s, quantity=%s
-        WHERE product_id=%s
-        """,
-        (
-            product["name"],
-            product["uom_id"],
-            product["price_per_unit"],
-            product["quantity"],
-            product["product_id"]
-        )
-    )
-
-    conn.commit()
     conn.close()
     return jsonify({"updated": True}), 200
 

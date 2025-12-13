@@ -62,7 +62,7 @@ jobs:
           nohup python app.py > /tmp/backend.log 2>&1 &
           echo $! > /tmp/backend.pid
 
-      - name: Wait for app on port 5000
+      - name: Wait for app on port 5050
         run: |
           python - <<'PY'
           import socket, time, sys
