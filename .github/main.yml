@@ -51,7 +51,7 @@ jobs:
       # ------------------------------
       - name: Run unit tests
         working-directory: backend
-        run: pytest /tests/unittest
+        run: pytest /tests/unittest/*.py
 
       # ------------------------------
       # Start Flask backend
@@ -87,7 +87,7 @@ jobs:
         run: |
           npm init -y
           npm install eslint --save-dev
-          npx eslint --init  # optional
+          npx eslint --init  
 
       - name: Run ESLint
         working-directory: UI
