@@ -1,4 +1,4 @@
-from db.sql_connection import get_sql_connection
+from ..db.sql_connection import get_sql_connection
 
 # -------------------------------------------------------
 # GET ALL PRODUCTS

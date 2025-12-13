@@ -2,13 +2,13 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import json
 
-from dao.products_dao import get_all_products, insert_new_product, delete_product, update_product
-from dao.uom_dao import get_all_uoms
-from dao.order_dao import add_order
-from dao.order_list_dao import get_all_orders, get_recent_orders
-from dao.order_details_dao import get_order_details
-from db.sql_connection import get_sql_connection
-from routes.calculations import calculations_bp
+from .dao.products_dao import get_all_products, insert_new_product, delete_product, update_product
+from .dao.uom_dao import get_all_uoms
+from .dao.order_dao import add_order
+from .dao.order_list_dao import get_all_orders, get_recent_orders
+from .dao.order_details_dao import get_order_details
+from .db.sql_connection import get_sql_connection
+from .routes.calculations import calculations_bp
 
 app = Flask(__name__)
 
@@ -96,7 +96,6 @@ def api_update_product():
 
     product = json.loads(raw)
     conn = connection()
-    conn.close()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -240,4 +239,4 @@ def api_delete_order(order_id):
 # -----------------------
 if __name__ == "__main__":
     print("Starting Flask API on http://localhost:5000")
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(debug=True, port=5000)

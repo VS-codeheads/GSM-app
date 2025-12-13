@@ -1,10 +1,10 @@
 from flask import Blueprint, request, jsonify
 import mysql.connector
 from datetime import datetime
-from db.sql_connection import get_sql_connection
+from ..db.sql_connection import get_sql_connection
 
-from services.revenue_calculator import calculate_revenue_and_profit
-from services.inventory_spend import calculate_monthly_inventory_spend
+from ..services.revenue_calculator import calculate_revenue_and_profit
+from ..services.inventory_spend import calculate_monthly_inventory_spend
 
 calculations_bp = Blueprint("calculations", __name__)
 

@@ -24,6 +24,9 @@ instance/
 .env
 .env.*
 
+# stress testing results
+tests/stress_performance_tests/results.jtl
+
 # ======================================
 # FRONTEND
 # ======================================

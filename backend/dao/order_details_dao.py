@@ -7,6 +7,7 @@ def get_order_details(conn, order_id):
             o.customer_name,
             o.total_price,
             o.datetime,
+            od.product_id,
             p.name AS product_name,
             p.uom_id,
             u.uom_name,
