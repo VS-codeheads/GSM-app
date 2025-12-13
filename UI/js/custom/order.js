@@ -1,15 +1,39 @@
 
+
+// -------------------------------
+// API HELPERS
+// -------------------------------
+function apiGet(path) {
+    return fetch(`${window.API_BASE}${path}`).then(res => res.json());
+}
+
+function apiPost(path, body) {
+    return fetch(`${window.API_BASE}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    }).then(res => res.json());
+}
+
+function apiDelete(path) {
+    return fetch(`${window.API_BASE}${path}`, { method: "DELETE" })
+        .then(res => res.json());
+}
+
 const urlParams = new URLSearchParams(window.location.search || "");
 const editingId = urlParams.get("id");
 
 $(function () {
+
     const $items = $("#itemsInOrder");
     const $template = $("#rowTemplate .product-item").clone();
     const $grandTotal = $("#product_grand_total");
 
     let products = [];
 
-    // Load products (returns Promise)
+    // ----------------------------------------
+    // LOAD PRODUCTS
+    // ----------------------------------------
     function loadProducts() {
         return apiGet("/getProducts")
             .then(list => {
@@ -18,7 +42,9 @@ $(function () {
             });
     }
 
-    // Creating a new row for selecting product
+    // ----------------------------------------
+    // CREATE A PRODUCT ROW
+    // ----------------------------------------
     function createRow() {
         const $row = $template.clone();
 
@@ -28,13 +54,12 @@ $(function () {
 
         products.forEach(p => {
             $select.append(`
-                <option data-price="${p.price_per_unit}" value="${p.product_id}">
-                   ${p.name} (${p.uom_name})
+                <option value="${p.product_id}" data-price="${p.price_per_unit}">
+                    ${p.name} (${p.uom_name})
                 </option>
             `);
         });
 
-        // Handlers
         $select.on("change", () => updateRow($row));
         $row.find(".product-qty").on("input", () => updateRow($row));
         $row.find(".remove-row").on("click", () => {
@@ -45,7 +70,9 @@ $(function () {
         return $row;
     }
 
-    // Update row total
+    // ----------------------------------------
+    // UPDATE ROW TOTAL
+    // ----------------------------------------
     function updateRow($row) {
         const price = parseFloat($row.find("option:selected").data("price") || 0);
         const qty = parseFloat($row.find(".product-qty").val() || 0);
@@ -58,23 +85,32 @@ $(function () {
         updateGrandTotal();
     }
 
-    // Update grand total
+    // ----------------------------------------
+    // UPDATE GRAND TOTAL
+    // ----------------------------------------
     function updateGrandTotal() {
         let sum = 0;
+
         $items.find(".product-item").each(function () {
             sum += parseFloat($(this).find(".product-total").val() || 0);
         });
+
         $grandTotal.val(sum.toFixed(2));
     }
 
-    // Add new row
+    // ----------------------------------------
+    // ADD NEW ROW
+    // ----------------------------------------
     $("#addMoreButton").click(function (e) {
         e.preventDefault();
         $items.append(createRow());
     });
 
-    // Save order (create or edit)
+    // ----------------------------------------
+    // SAVE ORDER
+    // ----------------------------------------
     $("#saveOrder").click(function () {
+
         const customer_name = $("#customerName").val().trim();
 
         if (!customer_name) {
@@ -84,11 +120,12 @@ $(function () {
         const details = [];
 
         $items.find(".product-item").each(function () {
+
             const pid = $(this).find(".cart-product").val();
             const qty = parseFloat($(this).find(".product-qty").val());
             const total = parseFloat($(this).find(".product-total").val());
 
-            if (!pid || !qty || qty <= 0) return;
+            if (!pid || qty <= 0 || isNaN(qty)) return;
 
             details.push({
                 product_id: parseInt(pid),
@@ -98,7 +135,7 @@ $(function () {
         });
 
         if (details.length === 0) {
-            return toast("Add at least one item");
+            return toast("Add at least one valid item");
         }
 
         const payload = {
@@ -109,34 +146,10 @@ $(function () {
             order_details: details
         };
 
-        // Prefer existing apiPost helper (common.js). If missing, fallback to fetch.
-        if (typeof apiPost === "function") {
-            apiPost("/addOrder", payload)
-                .then(resp => {
-                    toast("Order saved!");
-                    window.location.href = "index.html";
-                })
-                .catch(err => {
-                    console.error(err);
-                    toast("Failed to save order");
-                });
-            return;
-        }
-
-        // Send as form-encoded 'data' key 
-        const fd = new FormData();
-        fd.append("data", JSON.stringify(payload));
-
-        fetch("/addOrder", { method: "POST", body: fd })
-            .then(r => r.json())
+        apiPost("/addOrder", payload)
             .then(resp => {
-                if (resp && resp.order_id) {
-                    toast("Order saved!");
-                    window.location.href = "index.html";
-                } else {
-                    console.error("Unexpected response:", resp);
-                    toast("Failed to save order");
-                }
+                toast("Order saved!");
+                window.location.href = "index.html";
             })
             .catch(err => {
                 console.error(err);
@@ -144,28 +157,34 @@ $(function () {
             });
     });
 
-    // Load order for editing
+    // ----------------------------------------
+    // LOAD EXISTING ORDER 
+    // ----------------------------------------
     function loadExistingOrder(orderId) {
-        return apiGet("/getOrder/${orderId}")
+        return apiGet(`/getOrder/${orderId}`)
             .then(order => {
+
                 if (!order) throw new Error("Order not found");
 
                 $("#customerName").val(order.customer_name || "");
 
                 $items.empty();
+
                 if (order.items && order.items.length) {
                     order.items.forEach(item => {
                         const $row = createRow();
 
-                        // Set product, quantity, price, total
+                        // Set selected product
                         $row.find(".cart-product").val(item.product_id);
-                        // If product price not sent from server, derive from item_total/quantity
-                        const unitPrice = item.unit_price || (item.quantity ? (item.item_total / item.quantity) : 0);
-                        $row.find(".product-price").val(parseFloat(unitPrice).toFixed(2));
+
+                        // Derive unit price if backend didn’t provide it
+                        const unitPrice = item.unit_price
+                            || (item.quantity > 0 ? item.item_total / item.quantity : 0);
+
+                        $row.find(".product-price").val(unitPrice.toFixed(2));
                         $row.find(".product-qty").val(item.quantity);
                         $row.find(".product-total").val(parseFloat(item.item_total).toFixed(2));
 
-                        // Append and ensure event handlers recalculate properly
                         $items.append($row);
                         updateRow($row);
                     });
@@ -177,7 +196,9 @@ $(function () {
             });
     }
 
-    // Get products first, then decide edit/create
+    // ----------------------------------------
+    // INITIAL PAGE LOAD
+    // ----------------------------------------
     loadProducts()
         .then(() => {
             if (editingId) {
@@ -190,4 +211,5 @@ $(function () {
             console.error("Failed to load products:", err);
             toast("Failed to load products");
         });
+
 });

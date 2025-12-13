@@ -1,3 +1,22 @@
+
+
+function apiGet(path) {
+    return fetch(`${window.API_BASE}${path}`).then(res => res.json());
+}
+
+function apiPost(path, body) {
+    return fetch(`${window.API_BASE}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    }).then(res => res.json());
+}
+
+function apiDelete(path) {
+    return fetch(`${window.API_BASE}${path}`, { method: "DELETE" })
+        .then(res => res.json());
+}
+
 let editingProductId = null;
 let cachedProducts = [];
 
@@ -62,7 +81,7 @@ $(function () {
             p.name.toLowerCase().includes(q) ||
             p.uom_name.toLowerCase().includes(q) ||
             String(p.price_per_unit).includes(q) ||
-            (p.quantity != undefined && String(q.quantity).includes(q))
+            String(p.quantity).includes(q)
         );
 
         renderProducts(filtered);

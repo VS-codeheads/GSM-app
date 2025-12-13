@@ -1,3 +1,25 @@
+
+// ------------------------
+// SIMPLE API HELPERS
+// ------------------------
+function apiGet(url) {
+    return fetch(`${window.API_BASE}${url}`).then(res => {
+        if (!res.ok) throw new Error("API GET failure: " + url);
+        return res.json();
+    });
+}
+
+function apiPost(url, body) {
+    return fetch(`${window.API_BASE}${url}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    }).then(res => {
+        if (!res.ok) throw new Error("API POST failure: " + url);
+        return res.json();
+    });
+}
+
 // ------------------------
 // WEATHER WIDGET
 // ------------------------
@@ -34,9 +56,9 @@ function loadWeather() {
 }
 
 function getProfitClass(profit) {
-    if (profit > 0) return "text-success fw-bold";   // green
-    if (profit < 0) return "text-danger fw-bold";   // red
-    return "text-muted";                            // grey
+    if (profit > 0) return "text-success fw-bold";
+    if (profit < 0) return "text-danger fw-bold";
+    return "text-muted";
 }
 
 let showingAll = false;
@@ -71,26 +93,26 @@ function renderOrders(orders) {
     });
 }
 
-
 // ------------------------
 // LOAD ORDERS
 // ------------------------
 function loadRecentOrders() {
-    apiGet("/getRecentOrders")
-        .then(orders => {
-            cachedOrders = orders;
-            renderOrders(cachedOrders);
-        });
+    apiGet("/getRecentOrders").then(orders => {
+        cachedOrders = orders;
+        renderOrders(orders);
+    });
 }
 
 function loadAllOrders() {
-    apiGet("/getOrders")
-        .then(orders => {
-            cachedOrders = orders;
-            renderOrders(cachedOrders);
-        });
+    apiGet("/getOrders").then(orders => {
+        cachedOrders = orders;
+        renderOrders(orders);
+    });
 }
 
+// ------------------------
+// SIMULATION RESULT RENDERING
+// ------------------------
 function renderSimulationResult(data) {
     if (!data) return;
 
@@ -114,7 +136,7 @@ function renderSimulationResult(data) {
         </div>
     `;
 
-    // DETAILS TABLE
+    // DETAILS
     html += `
         <h5>Breakdown By Product</h5>
         <table class="table table-bordered table-sm">
@@ -152,146 +174,120 @@ function renderSimulationResult(data) {
     $("#sim-result").html(html);
 }
 
-
 // ------------------------
 // PAGE INITIALIZATION
 // ------------------------
 $(function () {
-
     loadRecentOrders();
     loadWeather();
 
-    // --- TOGGLE BUTTON LOGIC ---
+    // Toggle button
     $("#toggleOrdersBtn").click(function () {
         if (showingAll) {
             loadRecentOrders();
             $(this).text("Show All Orders");
-            showingAll = false;
         } else {
             loadAllOrders();
             $(this).text("Show Recent Orders");
-            showingAll = true;
         }
+        showingAll = !showingAll;
     });
 
-    // --- LIVE SEARCH ---
+    // Live search
     $("#orderSearch").on("input", function () {
         const q = $(this).val().toLowerCase();
-
         const filtered = cachedOrders.filter(o =>
             o.customer_name.toLowerCase().includes(q) ||
             String(o.order_id).includes(q) ||
             new Date(o.datetime).toLocaleString().toLowerCase().includes(q)
         );
-
         renderOrders(filtered);
     });
 
-    // ----------------------------------------
-    // REVENUE SIMULATION MODAL LOGIC
-    // ----------------------------------------
-
+    // Revenue Simulation Modal
     $("#revenueModal").on("shown.bs.modal", function () {
-        console.log("Loading products for simulation...");
+        apiGet("/getProducts").then(products => {
+            const select = document.getElementById("sim-products");
+            select.innerHTML = "";
 
-        fetch("http://127.0.0.1:5000/getProducts")
-            .then(res => res.json())
-            .then(products => {
-                const select = document.getElementById("sim-products");
-                select.innerHTML = "";
-
-                products.forEach(p => {
-                    const opt = document.createElement("option");
-                    opt.value = p.product_id;
-                    opt.textContent = p.name;
-                    select.appendChild(opt);
-                });
+            products.forEach(p => {
+                const opt = document.createElement("option");
+                opt.value = p.product_id;
+                opt.textContent = p.name;
+                select.appendChild(opt);
             });
+        });
     });
 
-    $("#run-simulation").on("click", function () {
+    $("#run-simulation").click(function () {
         const select = document.getElementById("sim-products");
         const days = parseInt(document.getElementById("sim-days").value);
 
-        const productIds = Array.from(select.selectedOptions)
-            .map(opt => parseInt(opt.value));
+        const productIds = Array.from(select.selectedOptions).map(opt =>
+            parseInt(opt.value)
+        );
 
         if (productIds.length === 0) {
             alert("Please select at least one product.");
             return;
         }
 
-        fetch("http://127.0.0.1:5000/api/calc/revenue", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                product_ids: productIds,
-                days: days,
-                seed: 123
-            })
+        apiPost("/api/calc/revenue", {
+            product_ids: productIds,
+            days: days,
+            seed: 123
         })
-            .then(res => res.json())
-            .then(data => {
-                renderSimulationResult(data);
-            })
+            .then(data => renderSimulationResult(data))
             .catch(err => {
-                console.error("Simulation failed:", err);
-                alert("Simulation failed. See console.");
+                console.error(err);
+                alert("Simulation failed");
             });
     });
-
-    $("#revenueModal").on("hidden.bs.modal", function () {
-        const el = document.getElementById("sim-result");
-        if (el) el.blur();
-    });
-
-}); 
-
+});
 
 // ------------------------
-// ORDER ROW CLICK HANDLER
+// ORDER DETAILS MODAL
 // ------------------------
 $(document).on("click", ".order-row", function () {
     const orderId = $(this).data("id");
 
-    apiGet(`/getOrderDetails/${orderId}`)
-        .then(items => {
-            if (!items || items.length === 0) {
-                $("#detailsContent").html("<p>No details found.</p>");
-                return;
-            }
+    apiGet(`/getOrderDetails/${orderId}`).then(items => {
+        if (!items || items.length === 0) {
+            $("#detailsContent").html("<p>No details found.</p>");
+            return;
+        }
 
-            let html = `
-                <h5>Order #${items[0].order_id}</h5>
-                <p><b>Customer:</b> ${items[0].customer_name}</p>
-                <p><b>Total:</b> ${items[0].total_price.toFixed(2)}</p>
-                <hr>
-                <table class="table table-sm table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Qty</th>
-                            <th>Unit</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            items.forEach(i => {
-                html += `
+        let html = `
+            <h5>Order #${items[0].order_id}</h5>
+            <p><b>Customer:</b> ${items[0].customer_name}</p>
+            <p><b>Total:</b> ${items[0].total_price.toFixed(2)}</p>
+            <hr>
+            <table class="table table-sm table-bordered">
+                <thead>
                     <tr>
-                        <td>${i.product_name}</td>
-                        <td>${i.quantity}</td>
-                        <td>${i.uom_name}</td>
-                        <td>${i.item_total.toFixed(2)}</td>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Unit</th>
+                        <th>Total</th>
                     </tr>
-                `;
-            });
+                </thead>
+                <tbody>
+        `;
 
-            html += "</tbody></table>";
-            $("#detailsContent").html(html);
-
-            new bootstrap.Modal("#orderDetailsModal").show();
+        items.forEach(i => {
+            html += `
+                <tr>
+                    <td>${i.product_name}</td>
+                    <td>${i.quantity}</td>
+                    <td>${i.uom_name}</td>
+                    <td>${i.item_total.toFixed(2)}</td>
+                </tr>
+            `;
         });
+
+        html += "</tbody></table>";
+        $("#detailsContent").html(html);
+
+        new bootstrap.Modal("#orderDetailsModal").show();
+    });
 });
