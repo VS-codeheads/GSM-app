@@ -50,8 +50,7 @@ jobs:
       # Run unit tests
       # ------------------------------
       - name: Run unit tests
-        working-directory: tests
-        run: pytest /unittest
+        run: pytest tests/unittest
 
       # ------------------------------
       # Start Flask backend
