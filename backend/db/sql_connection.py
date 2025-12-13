@@ -2,10 +2,14 @@ import mysql.connector
 import os
 from dotenv import load_dotenv
 
-# Load .env variables
 load_dotenv()
 
 def get_sql_connection():
+
+    # In CI, skip DB connection entirely
+    if os.getenv("CI") == "true":
+        print("CI mode: returning None for SQL connection")
+        return None
 
     # Validate required variables
     if not os.getenv("MYSQL_USER"):
@@ -17,7 +21,6 @@ def get_sql_connection():
     if not os.getenv("MYSQL_DB"):
         raise ValueError("Missing MYSQL_DB in .env file")
 
-    # Create connection 
     return mysql.connector.connect(
         user=os.getenv("MYSQL_USER"),
         password=os.getenv("MYSQL_PASSWORD"),
