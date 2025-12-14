@@ -12,9 +12,29 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: gsm_test
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_pass
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+        ports:
+          - 3306:3306
+
     env:
       BASE_URL: http://127.0.0.1:5050
       FRONTEND_URL: http://127.0.0.1:8000
+      MYSQL_USER: test_user
+      MYSQL_PASSWORD: test_pass
+      MYSQL_DB: gsm_test
+      MYSQL_HOST: 127.0.0.1
 
     steps:
       # -------------------------------------------------
@@ -69,6 +89,13 @@ jobs:
                   time.sleep(1)
           sys.exit("Backend did not start on port 5050 within 60s")
           PY
+
+      # -------------------------------------------------
+      # Initialize database schema
+      # -------------------------------------------------
+      - name: Initialize database
+        run: |
+          python backend/db/initialize_sql.py
 
       # -------------------------------------------------
       # Integration tests
