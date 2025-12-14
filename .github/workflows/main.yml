@@ -63,7 +63,7 @@ jobs:
     - name: Start Flask backend
       working-directory: backend
       run: |
-        export PYTHONPATH=.
+        echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
         nohup python app.py > /tmp/backend.log 2>&1 &
         echo $! > /tmp/backend.pid
 
