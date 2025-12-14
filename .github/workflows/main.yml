@@ -212,7 +212,7 @@ jobs:
       - name: Run Postman collection
         working-directory: tests/integration/postman
         run: |
-          newman run "Grocery Store Manager With Tests(GSM).postman_collection.json" \
+          newman run "GSM.postman_collection.json" \
             --env-var BASE_URL="${BASE_URL}"
 
       # -------------------------------------------------
