@@ -70,7 +70,7 @@ jobs:
       # Ensure PYTHONPATH
       # -------------------------------------------------
       - name: Export PYTHONPATH for tests
-        run: echo "PYTHONPATH=${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE}/tests" >> "$GITHUB_ENV"
+        run: echo "PYTHONPATH=${GITHUB_WORKSPACE}" >> "$GITHUB_ENV"
 
       # -------------------------------------------------
       # Start Flask backend
