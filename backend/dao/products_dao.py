@@ -53,6 +53,13 @@ def insert_new_product(connection, product):
     
     if quantity < 0:
         raise ValueError("Quantity cannot be negative")
+    
+     # Default selling_price to price_per_unit * 1.5 if not provided
+    selling_price = product.get("selling_price")
+    if selling_price is None:
+        selling_price = float(product["price_per_unit"]) * 1.5
+    else:
+        selling_price = float(selling_price)
 
     query = """
         INSERT INTO products (name, uom_id, price_per_unit, selling_price, quantity)
@@ -63,7 +70,7 @@ def insert_new_product(connection, product):
         product["name"],
         int(product["uom_id"]),
         float(product["price_per_unit"]),
-        float(product["selling_price"]),
+        selling_price,
         int(product["quantity"])
     )
 
@@ -101,6 +108,13 @@ def update_product(connection, product):
     if quantity < 0:
         raise ValueError("Quantity cannot be negative")
 
+    # Default selling_price to price_per_unit * 1.5 if not provided
+    selling_price = product.get("selling_price")
+    if selling_price is None:
+        selling_price = float(product["price_per_unit"]) * 1.5
+    else:
+        selling_price = float(selling_price)
+
     query = """
         UPDATE products
         SET 
@@ -116,7 +130,7 @@ def update_product(connection, product):
         product["name"],
         int(product["uom_id"]),
         float(product["price_per_unit"]),
-        float(product["selling_price"]),
+        selling_price,
         int(product["quantity"]),
         int(product["product_id"])
     )

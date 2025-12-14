@@ -69,26 +69,25 @@ class TestOrdersEndpoint:
     @pytest.mark.parametrize("order_data", [
         {
             "customer_name": "John Doe",
-            "total_price": 25.50,
+            "total_price": 10.00,
+            "datetime": "2025-12-03 12:00:00",
             "order_details": [
                 {"product_id": 1, "quantity": 2, "total_price": 10.00},
-                {"product_id": 2, "quantity": 3, "total_price": 15.50},
             ]
         },
         {
             "customer_name": "Jane Smith",
-            "total_price": 50.00,
+            "total_price": 15.00,
             "order_details": [
                 {"product_id": 1, "quantity": 5, "total_price": 50.00},
             ]
         },
         {
             "customer_name": "Bob Johnson",
-            "total_price": 100.75,
+            "total_price": 30.00,
+            "datetime": "2025-12-03 14:00:00",
             "order_details": [
-                {"product_id": 1, "quantity": 10, "total_price": 50.00},
-                {"product_id": 2, "quantity": 5, "total_price": 25.50},
-                {"product_id": 3, "quantity": 3, "total_price": 25.25},
+                {"product_id": 1, "quantity": 10, "total_price": 30.00},
             ]
         },
     ])
@@ -220,6 +219,7 @@ class TestOrdersEndpoint:
         order_data = {
             "customer_name": "Order to Delete",
             "total_price": 25.00,
+            "datetime": "2025-12-03 15:00:00",
             "order_details": [
                 {"product_id": 1, "quantity": 5, "total_price": 25.00},
             ]
