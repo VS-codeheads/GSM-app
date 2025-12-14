@@ -7,247 +7,755 @@
   },
 
   "item": [
-    {
-      "name": "Environment Setup",
-      "item": [
-        {
-          "name": "Set Base URL",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
-          }
-        }
-      ]
-    },
+		{
+			"name": "PRODUCTS",
+			"item": [
+				{
+					"name": "GET – Get all products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", function () { ",
+									"    pm.response.to.have.status(200); ",
+									"});",
+									"",
+									"pm.test(\"Response is array\", function () { ",
+									"    pm.expect(pm.response.json()).to.be.an('array'); ",
+									"});",
+									"",
+									"pm.test(\"Response status code is 200 or 201\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"// Parse JSON response as an array and check fields of each product",
+									"pm.test(\"Response is a valid JSON array with expected fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"",
+									"    pm.expect(responseData).to.be.an('array');",
+									"    responseData.forEach(product => {",
+									"        pm.expect(product).to.be.an('object');",
+									"        pm.expect(product).to.have.all.keys('product_id', 'name', 'uom_id', 'price_per_unit', 'selling_price', 'quantity');",
+									"    });",
+									"});",
+									"",
+									"// Update error message test to handle array response",
+									"pm.test(\"Response body contains appropriate error messages for status codes 400, 404, and 500\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    if (pm.response.code === 400 || pm.response.code === 404 || pm.response.code === 500) {",
+									"        pm.expect(responseData).to.be.an('array').that.is.not.empty;",
+									"        responseData.forEach(error => {",
+									"            pm.expect(error).to.be.an('object');",
+									"            pm.expect(error).to.have.property('error_message').that.is.a('string').and.is.not.empty;",
+									"        });",
+									"    }",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/getProducts",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"getProducts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST – Add product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Product updated\", () => pm.expect(pm.response.json().updated).to.be.true );",
+									"",
+									"pm.test(\"Response status code is 200 for successful update\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has a valid JSON structure\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response contains a success message\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.property('message').that.is.a('string').and.to.include('success');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response status code is 400 for bad request scenarios\", function () {",
+									"    pm.expect(pm.response.code).to.eql(400);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Bananas\",\n  \"uom_id\": 1,\n  \"price_per_unit\": 12.95,\n  \"selling_price\": 4,\n  \"quantity\": 10\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/addProduct",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"addProduct"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST – Update product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Product updated\", () => pm.expect(pm.response.json().updated).to.be.true );",
+									"",
+									"pm.test(\"Response status code is 200 for a successful update\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response content is valid JSON\", function () {",
+									"    pm.expect(pm.response.json()).to.be.an('object');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response status code is 400 for bad request\", function () {",
+									"    pm.expect(pm.response.code).to.eql(400);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response status code is 404 for not found\", function () {",
+									"    pm.expect(pm.response.code).to.eql(404);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_id\": 7,\n  \"name\": \"Bananas\",\n  \"uom_id\": 1,\n  \"price_per_unit\": 15.00,\n  \"selling_price\": 5,\n  \"quantity\": 50\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/updateProduct",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"updateProduct"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE – Delete product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+									"",
+									"pm.test(\"Response status code is 200 for successful deletion\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response content is valid JSON\", function () {",
+									"    pm.expect(pm.response.json()).to.be.an('object');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response status code is 400 for bad request\", function () {",
+									"    pm.expect(pm.response.code).to.equal(400);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response status code is 404 for not found\", function () {",
+									"    pm.expect(pm.response.code).to.equal(404);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/deleteProduct/1",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"deleteProduct",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "UOM",
+			"item": [
+				{
+					"name": "GET – Get all UOM values",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"UOM list is array\", () => pm.expect(pm.response.json()).to.be.an('array'));",
+									"",
+									"pm.test(\"Response status code is 200 or 201\", function () {",
+									"    pm.expect(pm.response.code).to.satisfy(function(status) {",
+									"        return status === 200 || status === 201;",
+									"    });",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response JSON contains expected fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.all.keys('uomList', 'status', 'message');",
+									"",
+									"    responseData.uomList.forEach(function(uom) {",
+									"        pm.expect(uom).to.have.all.keys('id', 'name', 'description');",
+									"        pm.expect(uom.id).to.be.a('string').that.is.not.empty;",
+									"        pm.expect(uom.name).to.be.a('string').that.is.not.empty;",
+									"        pm.expect(uom.description).to.be.a('string').that.is.not.empty;",
+									"    });",
+									"});",
+									"",
+									"",
+									"pm.test(\"Each UOM object has a valid structure\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('array');",
+									"    ",
+									"    responseData.forEach(function(uom) {",
+									"        pm.expect(uom).to.be.an('object');",
+									"        pm.expect(uom).to.have.all.keys('id', 'name', 'description');",
+									"        pm.expect(uom.id).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"        pm.expect(uom.name).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"        pm.expect(uom.description).to.be.a('string').or.to.be.null;",
+									"    });",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response is not empty for status 200 or 201\", function () {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"    pm.expect(responseData).to.not.be.empty;",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/getUOM",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"getUOM"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ORDERS",
+			"item": [
+				{
+					"name": "GET – Get all orders",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Response is array\", () => pm.expect(pm.response.json()).to.be.an('array'));",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Validate the JSON structure contains the expected fields for each order\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.orders).to.be.an('array').that.is.not.empty;",
+									"",
+									"    responseData.orders.forEach(order => {",
+									"        pm.expect(order).to.be.an('object');",
+									"        pm.expect(order).to.have.all.keys('orderId', 'customerId', 'items', 'totalAmount', 'status');",
+									"",
+									"        pm.expect(order.orderId).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"        pm.expect(order.customerId).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"        pm.expect(order.items).to.be.an('array').that.is.not.empty;",
+									"        pm.expect(order.totalAmount).to.be.a('number').and.to.be.at.least(0);",
+									"        pm.expect(order.status).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"    });",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response status code is not 400 for valid requests\", function () {",
+									"    pm.expect(pm.response.code).to.not.equal(400);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response status code is not 404 for valid requests\", function () {",
+									"    pm.expect(pm.response.code).to.not.equal(404);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response status code is not 500\", function () {",
+									"    pm.expect(pm.response.code).to.not.equal(500);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/getOrders",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"getOrders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST – Add order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+									"pm.test(\"Order ID exists\", () => pm.expect(pm.response.json().order_id).to.exist );",
+									"",
+									"pm.test(\"Response status code is 400 for invalid order data\", function () {",
+									"    pm.expect(pm.response.code).to.eql(400);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response status code is 404 for non-existent resource\", function () {",
+									"    pm.expect(pm.response.code).to.eql(404);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response status code is 500 for server error\", function () {",
+									"    pm.expect(pm.response.code).to.equal(500);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response contains required fields with correct data types\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.all.keys('orderId', 'userId', 'product', 'quantity', 'totalPrice', 'status');",
+									"    ",
+									"    pm.expect(responseData.orderId).to.be.a('string');",
+									"    pm.expect(responseData.userId).to.be.a('string');",
+									"    pm.expect(responseData.product).to.be.a('string');",
+									"    pm.expect(responseData.quantity).to.be.a('number');",
+									"    pm.expect(responseData.totalPrice).to.be.a('number');",
+									"    pm.expect(responseData.status).to.be.a('string');",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customer_name\": \"John Doe\",\n  \"total_price\": 39.90,\n  \"datetime\": \"2025-12-03 12:00:00\",\n  \"order_details\": [\n    {\"product_id\": 2, \"quantity\": 2, \"total_price\": 19.95},\n    {\"product_id\": 3, \"quantity\": 1, \"total_price\": 19.95}\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/addOrder",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"addOrder"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET – Get order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response is in valid JSON format\", function () {",
+									"    pm.expect(pm.response.json()).to.be.an('object');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response contains expected fields for the order\", function () {",
+									"    const responseData = pm.response.json();",
+									"",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.all.keys('orderId', 'customerName', 'items', 'totalAmount', 'orderDate');",
+									"",
+									"    pm.expect(responseData.orderId).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"    pm.expect(responseData.customerName).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"    ",
+									"    pm.expect(responseData.items).to.be.an('array').and.to.have.lengthOf.above(0);",
+									"    responseData.items.forEach(item => {",
+									"        pm.expect(item).to.have.all.keys('itemId', 'itemName', 'quantity', 'price');",
+									"        pm.expect(item.itemId).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"        pm.expect(item.itemName).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"        pm.expect(item.quantity).to.be.a('number').and.to.be.above(0);",
+									"        pm.expect(item.price).to.be.a('number').and.to.be.above(0);",
+									"    });",
+									"",
+									"    pm.expect(responseData.totalAmount).to.be.a('number').and.to.be.above(0);",
+									"    pm.expect(new Date(responseData.orderDate)).to.be.a('date');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response status code is 404 for non-existent order ID\", function () {",
+									"    pm.expect(pm.response.code).to.eql(404);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/getOrder/4",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"getOrder",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET – Get order details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"pm.test(\"Validate the JSON response structure for required fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object').that.is.not.empty;",
+									"    pm.expect(responseData).to.have.all.keys('orderId', 'customerName', 'items', 'totalAmount', 'status');",
+									"",
+									"    pm.expect(responseData.items).to.be.an('array');",
+									"    responseData.items.forEach(item => {",
+									"        pm.expect(item).to.have.all.keys('itemId', 'itemName', 'quantity', 'price');",
+									"        pm.expect(item.itemId).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"        pm.expect(item.quantity).to.be.a('number').and.to.be.at.least(1);",
+									"        pm.expect(item.price).to.be.a('number').and.to.be.at.least(0);",
+									"    });",
+									"});",
+									"",
+									"pm.test(\"Response should return a valid order object\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object').that.is.not.empty;",
+									"    pm.expect(responseData).to.have.all.keys('orderId', 'customerName', 'items', 'totalAmount', 'status');",
+									"    ",
+									"    pm.expect(responseData.orderId).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"    pm.expect(responseData.customerName).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"    pm.expect(responseData.totalAmount).to.be.a('number').and.to.be.at.least(0);",
+									"    pm.expect(responseData.status).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"    ",
+									"    pm.expect(responseData.items).to.be.an('array').that.is.not.empty;",
+									"    responseData.items.forEach(item => {",
+									"        pm.expect(item).to.be.an('object');",
+									"        pm.expect(item).to.have.all.keys('itemId', 'itemName', 'quantity', 'price');",
+									"        pm.expect(item.itemId).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"        pm.expect(item.itemName).to.be.a('string').and.to.have.lengthOf.at.least(1);",
+									"        pm.expect(item.quantity).to.be.a('number').and.to.be.at.least(1);",
+									"        pm.expect(item.price).to.be.a('number').and.to.be.at.least(0);",
+									"    });",
+									"});",
+									"",
+									"// Updated test for response status to check for 404",
+									"pm.test(\"Response status is 404 for invalid order ID\", function () {",
+									"    pm.expect(pm.response.code).to.eql(404);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/getOrderDetails/1",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"getOrderDetails",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE – Delete order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Deleted OK\", () => pm.response.to.have.status(200));",
+									"",
+									"pm.test(\"Response status code is 200 for successful deletion\", function () {",
+									"    pm.expect(pm.response.status).to.equal(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has a valid JSON structure confirming the deletion\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.property('success').that.is.a('boolean');",
+									"    pm.expect(responseData).to.have.property('message').that.is.a('string');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response contains a success message indicating the order was deleted\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.property('message').that.is.a('string').and.includes('deleted');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response status code is 404 for non-existent order deletion attempt\", function () {",
+									"    pm.expect(pm.response.code).to.eql(404);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/deleteOrder/1",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"deleteOrder",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
 
-    {
-      "name": "PRODUCTS",
-      "item": [
-
-        {
-          "name": "GET – Get all products",
-          "request": {
-            "method": "GET",
-            "url": { "raw": "{{base_url}}/getProducts", "host": ["{{base_url}}"], "path": ["getProducts"] }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Response is array\", function () { pm.expect(pm.response.json()).to.be.an('array'); });"
-                ]
-              }
-            }
-          ]
-        },
-
-        {
-          "name": "POST – Add product",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Bananas\",\n  \"uom_id\": 1,\n  \"price_per_unit\": 12.95\n}"
-            },
-            "url": { "raw": "{{base_url}}/addProduct", "host": ["{{base_url}}"], "path": ["addProduct"] }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": { "exec": [
-                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
-                "pm.test(\"Product ID exists\", () => pm.expect(pm.response.json().product_id).to.exist );"
-              ]}
-            }
-          ]
-        },
-
-        {
-          "name": "POST – Update product",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"product_id\": 1,\n  \"name\": \"Bananas\",\n  \"uom_id\": 1,\n  \"price_per_unit\": 15.00\n}"
-            },
-            "url": { "raw": "{{base_url}}/updateProduct", "host": ["{{base_url}}"], "path": ["updateProduct"] }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": { "exec": [
-                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
-                "pm.test(\"Product updated\", () => pm.expect(pm.response.json().updated).to.be.true );"
-              ]}
-            }
-          ]
-        },
-
-        {
-          "name": "DELETE – Delete product",
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{base_url}}/deleteProduct/1",
-              "host": ["{{base_url}}"],
-              "path": ["deleteProduct", "1"]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": { "exec": [
-                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
-              ]}
-            }
-          ]
-        }
-      ]
-    },
-
-    {
-      "name": "UOM",
-      "item": [
-        {
-          "name": "GET – Get all UOM values",
-          "request": {
-            "method": "GET",
-            "url": { "raw": "{{base_url}}/getUOM", "host": ["{{base_url}}"], "path": ["getUOM"] }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": { "exec": [
-                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
-                "pm.test(\"UOM list is array\", () => pm.expect(pm.response.json()).to.be.an('array'));"
-              ]}
-            }
-          ]
-        }
-      ]
-    },
-
-    {
-      "name": "ORDERS",
-      "item": [
-
-        {
-          "name": "GET – Get all orders",
-          "request": {
-            "method": "GET",
-            "url": { "raw": "{{base_url}}/getOrders", "host": ["{{base_url}}"], "path": ["getOrders"] }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": { "exec": [
-                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
-                "pm.test(\"Response is array\", () => pm.expect(pm.response.json()).to.be.an('array'));"
-              ]}
-            }
-          ]
-        },
-
-        {
-          "name": "POST – Add order",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"customer_name\": \"John Doe\",\n  \"total_price\": 39.90,\n  \"datetime\": \"2025-12-03 12:00:00\",\n  \"order_details\": [\n    {\"product_id\": 1, \"quantity\": 2, \"total_price\": 19.95},\n    {\"product_id\": 2, \"quantity\": 1, \"total_price\": 19.95}\n  ]\n}"
-            },
-            "url": { "raw": "{{base_url}}/addOrder", "host": ["{{base_url}}"], "path": ["addOrder"] }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": { "exec": [
-                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
-                "pm.test(\"Order ID exists\", () => pm.expect(pm.response.json().order_id).to.exist );"
-              ]}
-            }
-          ]
-        },
-
-        {
-          "name": "GET – Get order",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/getOrder/1",
-              "host": ["{{base_url}}"],
-              "path": ["getOrder","1"]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": { "exec": [
-                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
-              ]}
-            }
-          ]
-        },
-
-        {
-          "name": "GET – Get order details",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/getOrderDetails/1",
-              "host": ["{{base_url}}"],
-              "path": ["getOrderDetails", "1"]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": { "exec": [
-                "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
-              ]}
-            }
-          ]
-        },
-
-        {
-          "name": "DELETE – Delete order",
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{base_url}}/deleteOrder/1",
-              "host": ["{{base_url}}"],
-              "path": ["deleteOrder", "1"]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": { "exec": [
-                "pm.test(\"Deleted OK\", () => pm.response.to.have.status(200));"
-              ]}
-            }
-          ]
-        }
-      ]
-    }
-  ],
-
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:5000"
-    }
-  ]
+  "event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
 }
