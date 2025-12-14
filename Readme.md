@@ -1,218 +1,304 @@
-# Grocery Store Manager (GSM) — Setup Guide
-
-This README explains how to fully set up the database, backend, and frontend of the Grocery Store Manager web application so that the project runs identically on another machine.
-
-## Requirements
-
-Before starting, install:
-
-* Python 3.10+
-
-* MySQL Server 8+
-
-* MySQL Workbench (optional, for visual inspection)
-
-* pip (Python package manager)
+# Personal Test Data Generator – Group I  
+![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
+![Flask](https://img.shields.io/badge/Backend-Flask-lightgrey?logo=flask)
+![SQLite](https://img.shields.io/badge/Database-SQLite-blue?logo=sqlite)
+![Pytest](https://img.shields.io/badge/Tests-Pytest-green?logo=pytest)
+![Postman](https://img.shields.io/badge/API-Postman-orange?logo=postman)
+![Playwright](https://img.shields.io/badge/E2E-Playwright-purple?logo=microsoft)
+![SonarQube](https://img.shields.io/badge/Static--Analysis-SonarQube-lightblue?logo=sonarqube)
+![GitHub Actions](https://img.shields.io/badge/CI/CD-GitHub%20Actions-black?logo=githubactions)
 
 
-## Install Python Environment
+---
 
-Inside the project folder:
+## Overview  
+Grocery Store Manager (GSM) is a web-based management application designed for small grocery stores.
+The system allows store owners to:
 
-```bash
-python3 -m venv venv
-source venv/bin/activate     # macOS / Linux
-venv\Scripts\activate        # Windows
+* Manage products and units of measurement (UOM)
+
+* Track inventory quantities
+
+* Create and manage orders
+
+* Perform revenue simulations
+
+* Calculate inventory spending by month
+
+* Gain insights into sales, profit, and cost drivers
+
+The project was developed as part of the Testing in Software Development exam and focuses heavily on test design, automation, and quality assurance.
+
+Reference sources:  
+- [Insperation for backend and UI design](https://github.com/codebasics/python_projects_grocery_webapp.git)  
+
+---
+
+## Project Scope & Goals
+
+This project demonstrates the use of:
+
+* Black-box test design (EP, BVA, Decision Tables)
+
+* White-box testing (unit tests with coverage)
+
+* Integration testing (API + DB, Postman)
+
+* End-to-End testing (Playwright)
+
+* Static analysis tools (Pylint, ESLint, SonarCloud)
+
+* CI/CD automation using GitHub Actions
+
+---
+
+## Project Structure
+This is an **outline** of how we planned to organize files and folders for the assignment. 
+```
+/frontend
+/backend
+├── dao
+├── routes
+├── services
+├── db
+├── app.py
+
+/UI
+├── dashboard.html
+├── manage-product.html
+├── orders.html
+├── js
+
+/tests
+├── /unittest
+├── /integration
+│   └── /postman
+└── /e2e
+
+/.github
+└── /workflows
+    └── main.yml
+
+/pdf
+├── black-box-test-design.pdf
+├── static-analysis-report.pdf
+├── risk-assessment.pdf
+├── review-report.pdf
+
+requirements.txt
+README.md
+
 ```
 
-Install required packages:
+---
+## Run the project in local
+
 ```bash
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
-```
-
-## Project structure
-
-```sql
-GSM-app/
-│
-├── backend/
-│   ├── app.py
-│   ├── db/
-│   │   └── sql_connection.py
-│   ├── dao/
-│   │   ├── products_dao.py
-│   │   ├── order_dao.py
-│   │   ├── order_list_dao.py
-│   │   ├── order_details_dao.py
-│   │   └── revenue_dao.py
-│   ├── requirements.txt
-│   ├── sql_scripts
-│   │   ├── create.sql
-│   │   └── seed_tables.sql
-│
-└── UI/
-    ├── index.html
-    ├── order.html
-    ├── manage-product.html
-    ├── css/
-    ├── js/
-    └── ...
-```
-
-## Configure MySQL Access
-
-The database initializer uses these default settings:
-```yaml
-host: localhost
-user: root
-password: (empty)
-port: 3306
-database: grocery_store
-```
-
-If your MySQL user has a password, update this file:
-```bash
-backend/db/initialize_sql.py
-```
-
-Modify:
-```python
-MYSQL_USER = "root"
-MYSQL_PASS = ""
-```
-
-## Initialize + Seed the Database (Automatic)
-
-Your project includes a full database initializer:
-```bash
-backend/db/initialize_sql.py
-```
-
-This script will:
-
-* Create database grocery_store
-* Create all tables
-* Reset all tables safely
-* Insert UOMs
-* Insert example products
-* Insert example orders & order details
-
-Run it:
-```bash
-python backend/db/initialize_sql.py
-```
-
-You should see output like:
-
-* Connected to MySQL
-* Database ready
-* Tables created
-* All tables cleared and counters reset
-* UOMs inserted
-* Products inserted
-* Sample orders inserted
-
-If you see and error, it will explain the exact issue.
-
-
-##Run the Backend (Flask API)
-
-From the project root:
-```bash
 python backend/app.py
 ```
+Backend runs on:
+* http://127.0.0.1:5050
 
-Server starts at:
+---
 
-* http://localhost:5000
-
-
-You should see:
-```nginx
-Starting Flask API on http://localhost:5000
-```
-
-
-## Run the Frontend
-
-No build tools required — just open:
+## Frontend (Static HTML)
 ```bash
-UI/index.html
+cd UI
+npx http-server -p 8000
 ```
 
-or if the folder is named differently:
-```bash
-frontend/index.html
-```
+Frontend runs on:
 
-Make sure the browser is allowed to load local JS files.
+* http://127.0.0.1:8000
 
+---
 
-## API Endpoints
+## API Endpoints (Backend)
 
-Products
-
+### Products
 | Method | Endpoint              | Description           |
 | ------ | --------------------- | --------------------- |
-| GET    | `/getProducts`        | List all products     |
+| GET    | `/getProducts`        | Retrieve all products |
 | POST   | `/addProduct`         | Add new product       |
-| POST   | `/updateProduct`      | Update a product      |
-| DELETE | `/deleteProduct/<id>` | Delete a product      |
-| GET    | `/getUOM`             | List units of measure |
+| POST   | `/updateProduct`      | Update product        |
+| DELETE | `/deleteProduct/<id>` | Delete product        |
 
-Orders
+### Units of measure
+| Method | Endpoint  | Description       |
+| ------ | --------- | ----------------- |
+| GET    | `/getUOM` | Retrieve all UOMs |
 
-| Method | Endpoint                | Description            |
-| ------ | ----------------------- | ---------------------- |
-| GET    | `/getOrders`            | List all orders        |
-| GET    | `/getOrder/<id>`        | Single order + items   |
-| GET    | `/getOrderDetails/<id>` | Order item breakdown   |
-| POST   | `/addOrder`             | Create or update order |
-| DELETE | `/deleteOrder/<id>`     | Remove an order        |
+### Orders
+| Method | Endpoint            | Description                 |
+| ------ | ------------------- | --------------------------- |
+| POST   | `/addOrder`         | Create or update order      |
+| GET    | `/getOrders`        | Retrieve all orders         |
+| GET    | `/getRecentOrders`  | Retrieve latest orders      |
+| GET    | `/getOrder/<id>`    | Retrieve order with details |
+| DELETE | `/deleteOrder/<id>` | Delete order                |
+
+### Calculations
+| Method | Endpoint            | Description             |
+| ------ | ------------------- | ----------------------- |
+| POST   | `/api/calc/revenue` | Revenue simulation      |
+| POST   | `/api/calc/spend`   | Monthly inventory spend |
 
 
-## Weather Widget (External API)
+## Testing Strategy
 
-In dashboard.js, replace:
-```js
-const API_KEY = "YOUR_API_KEY_HERE";
+1. Unit Testing (White-box)
+
+**Tool**: Pytest
+**Scope**: DAO and service-layer logic
+**Includes**:
+
+* Control flow validation
+
+* Data validation
+
+* Boundary checks
+
+* Error handling
+
+* Code coverage
+```bash
+pytest tests/unittest --cov=backend
 ```
 
-with your OpenWeather key.
+---
 
-Get one free from:
+2. Black-box Test Design
 
-* https://openweathermap.org/api
+The following techniques were used and documented:
+
+* Equivalence Partitioning (EP)
+
+* Boundary Value Analysis (BVA)
+
+* Decision Tables
+
+* State transitions (where applicable)
+
+📄 See:
+    * /pdf/black-box-test-design.pdf
+
+--- 
+
+3. Integration Testing
+
+* API ↔ Database using Pytest
+
+* API ↔ Client using Postman
+
+* Automated execution using Newman
+```bash
+pytest tests/integration
+newman run tests/integration/postman/GSM.postman_collection.json
+```
+
+---
+
+4. End-to-End Testing (E2E)
+
+**Tool**: Playwright + Pytest
+
+Tested flows:
+
+* Product creation
+
+* Order creation
+
+* Revenue simulation
+
+* User-visible UI behavior
+```bash
+playwright install
+pytest tests/e2e
+```
+
+---
+
+## Static Analysis & Quality Tools
+
+### Python
+
+* Pylint for code quality
+
+* pytest-cov for coverage
+
+### Frontend
+
+* ESLint for JavaScript analysis
+
+### Code Quality Platform
+
+* SonarCloud integrated into CI pipeline
+
+* Tracks:
+
+    * Code smells
+
+    * Duplications
+
+    * Coverage
+
+    * Maintainability issues
+
+---
+
+## CI/CD Pipeline
+
+**Tool**: GitHub Actions
+
+* Automated steps:
+
+1. Install dependencies
+
+2. Run Pylint & ESLint
+
+3. Run unit tests with coverage
+
+4. Start backend & frontend
+
+5. Run integration tests
+
+6. Run E2E tests
+
+7. Upload coverage to SonarCloud
+
+Pipeline configuration:
+```bash
+.github/workflows/main.yml
+```
+
+---
+
+## Academic Focus
+
+This project emphasizes:
+
+* Test design over feature complexity
+
+* Clear traceability between requirements and tests
+
+* Practical use of testing theory
+
+* Automation and reproducibility
+
+* All required deliverables for the exam are included as PDFs.
+
+---
+
+## Authors
+
+Sofie Thorlund
+
+Viktor Back
 
 
-## Testing Instructions (Not done)
+### Final Note
 
-### Black-box test scenarios
-
-(username, product flow, order flow)
-
-### Postman API collection
-
-All endpoints can be tested with GET/POST/DELETE.
-
-### Selenium E2E UI tests
-
-Recommended:
-
-Open dashboard
-
-Create order
-
-Edit order
-
-Delete order
-
-Add product
-
-Edit product
-
-Delete product
-
-### JMeter performance test
-
-Test GET /getOrders under load (50–200 users)
+This project was developed explicitly for academic evaluation, with a strong focus on software testing methods, tooling, and documentation, rather than production deployment.
