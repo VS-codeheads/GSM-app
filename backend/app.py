@@ -2,13 +2,18 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import json
 
-from .dao.products_dao import get_all_products, insert_new_product, update_product, delete_product
-from .dao.uom_dao import get_all_uoms
-from .dao.order_dao import add_order
-from .dao.order_list_dao import get_all_orders, get_recent_orders
-from .dao.order_details_dao import get_order_details
-from .db.sql_connection import get_sql_connection
-from .routes.calculations import calculations_bp
+from dao.products_dao import (
+    get_all_products,
+    insert_new_product,
+    update_product,
+    delete_product,
+)
+from dao.uom_dao import get_all_uoms
+from dao.order_dao import add_order
+from dao.order_list_dao import get_all_orders, get_recent_orders
+from dao.order_details_dao import get_order_details
+from db.sql_connection import get_sql_connection
+from routes.calculations import calculations_bp
 
 # -------------------------------------------------------
 # Flask App Setup
@@ -62,6 +67,10 @@ def parse_incoming_json():
 
     return None
 
+
+@app.route("/health")
+def health():
+    return {"status": "ok"}
 
 # -------------------------------------------------------
 # PRODUCTS
