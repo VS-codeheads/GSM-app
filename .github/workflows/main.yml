@@ -223,6 +223,19 @@ jobs:
             --env-var BASE_URL="${BASE_URL}" || true
 
       # -------------------------------------------------
+      # SonarCloud analysis
+      # -------------------------------------------------
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=VS-codeheads_GSM-app
+            -Dsonar.organization=vs-codeheads
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+
+      # -------------------------------------------------
       # Debug logs on failure
       # -------------------------------------------------
       - name: Show logs on failure
