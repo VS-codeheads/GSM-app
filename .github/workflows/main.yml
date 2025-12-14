@@ -95,7 +95,92 @@ jobs:
       # -------------------------------------------------
       - name: Initialize database
         run: |
-          python backend/db/initialize_sql.py
+          python - <<'PY'
+          import mysql.connector
+          import time
+          
+          # Wait for MySQL to be ready
+          deadline = time.time() + 60
+          while time.time() < deadline:
+              try:
+                  conn = mysql.connector.connect(
+                      host="127.0.0.1",
+                      user="root",
+                      password="root"
+                  )
+                  conn.close()
+                  break
+              except Exception:
+                  time.sleep(1)
+          
+          # Connect and initialize
+          conn = mysql.connector.connect(
+              host="127.0.0.1",
+              user="root",
+              password="root"
+          )
+          cursor = conn.cursor()
+          
+          # Create database if not exists
+          cursor.execute("CREATE DATABASE IF NOT EXISTS gsm_test")
+          cursor.execute("USE gsm_test")
+          
+          # Create tables
+          cursor.execute("""
+              CREATE TABLE IF NOT EXISTS uom (
+                  uom_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                  uom_name VARCHAR(45) NOT NULL
+              );
+          """)
+          
+          cursor.execute("""
+              CREATE TABLE IF NOT EXISTS products (
+                  product_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                  name VARCHAR(100) NOT NULL,
+                  uom_id INT NOT NULL,
+                  price_per_unit DOUBLE NOT NULL,
+                  selling_price DOUBLE NOT NULL DEFAULT 0,
+                  quantity INT NOT NULL DEFAULT 0,
+                  FOREIGN KEY (uom_id) REFERENCES uom(uom_id)
+              );
+          """)
+          
+          cursor.execute("""
+              CREATE TABLE IF NOT EXISTS orders (
+                  order_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                  customer_name VARCHAR(100) NOT NULL,
+                  total_price DOUBLE NOT NULL,
+                  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+              );
+          """)
+          
+          cursor.execute("""
+              CREATE TABLE IF NOT EXISTS order_details (
+                  order_details_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                  order_id INT NOT NULL,
+                  product_id INT NOT NULL,
+                  quantity INT NOT NULL,
+                  price DOUBLE NOT NULL,
+                  FOREIGN KEY (order_id) REFERENCES orders(order_id),
+                  FOREIGN KEY (product_id) REFERENCES products(product_id)
+              );
+          """)
+          
+          # Seed data
+          cursor.execute("INSERT INTO uom (uom_name) VALUES ('kg'), ('each'), ('litre')")
+          cursor.execute("""
+              INSERT INTO products (name, uom_id, price_per_unit, selling_price, quantity) VALUES
+              ('Apple', 1, 1.50, 3.00, 100),
+              ('Orange', 1, 3.00, 6.00, 80),
+              ('Toothpaste', 2, 10.00, 20.00, 40),
+              ('Milk', 3, 6.00, 12.00, 50)
+          """)
+          
+          conn.commit()
+          cursor.close()
+          conn.close()
+          print("✔ Database initialized")
+          PY
 
       # -------------------------------------------------
       # Integration tests
