@@ -14,6 +14,7 @@ def get_all_products(connection):
             p.name,
             p.uom_id,
             p.price_per_unit,
+            p.selling_price,
             p.quantity,
             u.uom_name
         FROM products p
@@ -25,12 +26,13 @@ def get_all_products(connection):
     cursor.execute(query)
 
     response = []
-    for (product_id, name, uom_id, price_per_unit, quantity, uom_name) in cursor:
+    for (product_id, name, uom_id, price_per_unit, selling_price, quantity, uom_name) in cursor:
         response.append({
             "product_id": product_id,
             "name": name,
             "uom_id": uom_id,
             "price_per_unit": float(price_per_unit),
+            "selling_price": float(selling_price),
             "quantity": quantity,
             "uom_name": uom_name
         })
@@ -44,15 +46,24 @@ def get_all_products(connection):
 def insert_new_product(connection, product):
     cursor = connection.cursor()
 
+    quantity = int(product["quantity"])
+
+    if quantity > 1000:
+        raise ValueError("Quantity cannot be larger than 1000 units")
+    
+    if quantity < 0:
+        raise ValueError("Quantity cannot be negative")
+
     query = """
-        INSERT INTO products (name, uom_id, price_per_unit, quantity)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO products (name, uom_id, price_per_unit, selling_price, quantity)
+        VALUES (%s, %s, %s, %s, %s)
     """
 
     data = (
         product["name"],
         int(product["uom_id"]),
         float(product["price_per_unit"]),
+        float(product["selling_price"]),
         int(product["quantity"])
     )
 
@@ -82,12 +93,21 @@ def delete_product(connection, product_id):
 def update_product(connection, product):
     cursor = connection.cursor()
 
+    quantity = int(product["quantity"])
+
+    if quantity > 1000:
+        raise ValueError("Quantity cannot be larger than 1000 units")
+    
+    if quantity < 0:
+        raise ValueError("Quantity cannot be negative")
+
     query = """
         UPDATE products
         SET 
             name = %s,
             uom_id = %s,
             price_per_unit = %s,
+            selling_price = %s,
             quantity = %s
         WHERE product_id = %s
     """
@@ -96,6 +116,7 @@ def update_product(connection, product):
         product["name"],
         int(product["uom_id"]),
         float(product["price_per_unit"]),
+        float(product["selling_price"]),
         int(product["quantity"]),
         int(product["product_id"])
     )

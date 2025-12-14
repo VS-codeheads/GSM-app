@@ -50,7 +50,7 @@ def backend_server():
     # Start backend server
     process = subprocess.Popen(
         ["python", "-m", "backend.app"],
-        cwd="/Users/viktorbach/GSM-app tests/GSM-app",
+        cwd="/Users/sofiethorlund/GSM-app tests/GSM-app",
         env=env,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
