@@ -9,160 +9,134 @@ on:
     branches: [ main ]
 
 jobs:
-  ci-pipeline:
+  test:
     runs-on: ubuntu-latest
 
     env:
-      BACKEND_PORT: 5050
-      BACKEND_URL: http://127.0.0.1:5050
-      FRONTEND_PORT: 8000
+      BASE_URL: http://127.0.0.1:5000
       FRONTEND_URL: http://127.0.0.1:8000
-      CI: true
 
     steps:
-    # -------------------------------------------------
-    # Checkout
-    # -------------------------------------------------
-    - uses: actions/checkout@v4
+      # -------------------------------------------------
+      # Checkout & Python setup
+      # -------------------------------------------------
+      - uses: actions/checkout@v4
 
-    # -------------------------------------------------
-    # Python setup
-    # -------------------------------------------------
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.12"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-    - name: Install backend dependencies
-      working-directory: backend
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-mock pytest-cov pylint python-dotenv
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-mock pytest-cov pylint
 
-    # -------------------------------------------------
-    # Static analysis – Python (Pylint)
-    # -------------------------------------------------
-    - name: Run Pylint
-      working-directory: backend
-      run: |
-        pylint $(git ls-files '*.py') || true
+      # -------------------------------------------------
+      # Static analysis – Pylint
+      # -------------------------------------------------
+      - name: Run Pylint
+        run: |
+          pylint backend/**/*.py || true
 
-    # -------------------------------------------------
-    # Unit tests + coverage
-    # -------------------------------------------------
-    - name: Run unit tests with coverage
-      run: |
-        pytest tests/unittest \
-          --cov=backend \
-          --cov-report=xml \
-          --cov-report=term
+      # -------------------------------------------------
+      # Unit tests
+      # -------------------------------------------------
+      - name: Run unit tests
+        run: pytest tests/unittest --cov=backend --cov-report=term
 
-    # -------------------------------------------------
-    # Start Flask backend
-    # -------------------------------------------------
-    - name: Start Flask backend
-      working-directory: backend
-      run: |
-        echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
-        nohup python app.py > /tmp/backend.log 2>&1 &
-        echo $! > /tmp/backend.pid
+      # -------------------------------------------------
+      # Start Flask backend
+      # -------------------------------------------------
+      - name: Start Flask backend (background)
+        run: |
+          nohup python -m backend.app > /tmp/backend.log 2>&1 &
+          echo $! > /tmp/backend.pid
 
-    - name: Wait for backend
-      run: |
-        echo "Waiting for backend..."
-        for i in {1..60}; do
-          curl -fsS "${BACKEND_URL}/getProducts" && exit 0
-          sleep 1
-        done
-        echo "Backend failed to start!"
-        exit 1
+      - name: Wait for backend on :5000
+        run: |
+          python - <<'PY'
+          import socket, time, sys
+          deadline = time.time() + 60
+          while time.time() < deadline:
+              try:
+                  sock = socket.socket()
+                  sock.settimeout(1)
+                  sock.connect(("127.0.0.1", 5000))
+                  sock.close()
+                  sys.exit(0)
+              except Exception:
+                  time.sleep(1)
+          sys.exit("Backend did not start on port 5000 within 60s")
+          PY
 
-    # -------------------------------------------------
-    # Node.js setup
-    # -------------------------------------------------
-    - uses: actions/setup-node@v4
-      with:
-        node-version: "20"
+      # -------------------------------------------------
+      # Integration tests
+      # -------------------------------------------------
+      - name: Run integration tests
+        run: pytest tests/integration -v
 
-    # -------------------------------------------------
-    # Static analysis – Frontend (ESLint)
-    # -------------------------------------------------
-    - name: Install ESLint
-      working-directory: UI
-      run: |
-        npm init -y
-        npm install eslint --save-dev
+      # -------------------------------------------------
+      # Node.js & Frontend setup
+      # -------------------------------------------------
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
-    - name: Run ESLint
-      working-directory: UI
-      run: |
-        npx eslint "**/*.js" || true
+      - name: Install frontend dependencies
+        working-directory: UI
+        run: npm install
 
-    # -------------------------------------------------
-    # Integration tests – Postman
-    # -------------------------------------------------
-    - name: Install Newman
-      run: npm install -g newman
+      - name: Run ESLint
+        working-directory: UI
+        run: npx eslint "**/*.js" || true
 
-    - name: Run Postman tests
-      working-directory: tests/integration/postman
-      run: |
-        newman run GSM.postman_collection.json \
-          --env-var BASE_URL="${BACKEND_URL}"
+      # -------------------------------------------------
+      # Postman tests
+      # -------------------------------------------------
+      - name: Install Newman
+        run: npm install -g newman
 
-    # -------------------------------------------------
-    # Frontend server for E2E
-    # -------------------------------------------------
-    - name: Install http-server
-      run: npm install -g http-server
+      - name: Run Postman collection
+        working-directory: tests/integration/postman
+        run: |
+          newman run "Grocery Store Manager With Tests(GSM).postman_collection.json" \
+            --env-var BASE_URL="${BASE_URL}"
 
-    - name: Start frontend
-      working-directory: UI
-      run: |
-        nohup http-server -p 8000 > /tmp/frontend.log 2>&1 &
-        echo $! > /tmp/frontend.pid
+      # -------------------------------------------------
+      # E2E tests – Playwright
+      # -------------------------------------------------
+      - name: Install http-server
+        run: npm install -g http-server
 
-    - name: Wait for frontend
-      run: |
-        for i in {1..60}; do
-          curl -fsS "${FRONTEND_URL}/index.html" && exit 0
-          sleep 1
-        done
-        echo "Frontend failed to start!"
-        exit 1
+      - name: Start frontend server (background on :8000)
+        run: |
+          nohup http-server -p 8000 > /tmp/frontend.log 2>&1 &
+          echo $! > /tmp/frontend.pid
+        working-directory: ./UI
 
-    # -------------------------------------------------
-    # E2E tests – Playwright
-    # -------------------------------------------------
-    - name: Install Playwright
-      run: |
-        pip install pytest-playwright
-        playwright install chromium
+      - name: Wait for frontend on :8000
+        run: |
+          for i in {1..60}; do
+            curl -fsS "${FRONTEND_URL}/index.html" && exit 0
+            sleep 1
+          done
+          echo "Frontend did not start on ${FRONTEND_URL} within 60s"
+          exit 1
 
-    - name: Run E2E tests
-      run: pytest tests/e2e
+      - name: Install Playwright browsers
+        run: pip install pytest-playwright && playwright install
 
-    # -------------------------------------------------
-    # SonarCloud analysis
-    # -------------------------------------------------
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@v2
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-          -Dsonar.projectKey=VS-codeheads_GSM-app
-          -Dsonar.organization=vs-codeheads
-          -Dsonar.python.coverage.reportPaths=coverage.xml
+      - name: Run E2E tests
+        run: pytest tests/e2e -v
 
-    # -------------------------------------------------
-    # Debug logs
-    # -------------------------------------------------
-    - name: Dump logs on failure
-      if: failure()
-      run: |
-        echo "=== BACKEND LOG ==="
-        sed -n '1,200p' /tmp/backend.log || true
-
-        echo "=== FRONTEND LOG ==="
-        sed -n '1,200p' /tmp/frontend.log || true
+      # -------------------------------------------------
+      # Debug logs on failure
+      # -------------------------------------------------
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          echo "==== backend.log ===="
+          sed -n '1,200p' /tmp/backend.log || true
+          echo "==== frontend.log ===="
+          sed -n '1,200p' /tmp/frontend.log || true
