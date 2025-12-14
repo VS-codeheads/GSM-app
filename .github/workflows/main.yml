@@ -67,6 +67,12 @@ jobs:
         run: pytest tests/unittest --cov=backend --cov-report=term
 
       # -------------------------------------------------
+      # Ensure PYTHONPATH
+      # -------------------------------------------------
+      - name: Export PYTHONPATH for tests
+        run: echo "PYTHONPATH=${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE}/tests" >> "$GITHUB_ENV"
+
+      # -------------------------------------------------
       # Start Flask backend
       # -------------------------------------------------
       - name: Start Flask backend (background)
@@ -241,6 +247,8 @@ jobs:
         run: pip install pytest-playwright && playwright install
 
       - name: Run E2E tests
+        env:
+          PYTHONPATH: ${{ env.PYTHONPATH }}
         run: pytest tests/e2e -v
 
       # -------------------------------------------------
