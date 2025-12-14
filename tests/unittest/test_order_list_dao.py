@@ -53,7 +53,7 @@ def test_get_recent_orders_default_limit():
     sql, params = cursor.execute.call_args.args
     assert "ORDER BY o.datetime DESC" in sql
     assert "LIMIT %s" in sql
-    assert params == (5,)  # default
+    assert params == (5,)
 
 
 # ---------------------------------------------------------
@@ -106,5 +106,5 @@ def test_get_recent_orders_invalid_limits(limit):
     """Decision Table: function should raise for invalid limit types."""
     conn, cursor = mock_connection()
 
-    with pytest.raises(Exception):  # Your DAO does no validation  DB errors hit here
+    with pytest.raises(Exception):
         get_recent_orders(conn, limit=limit)
