@@ -15,7 +15,6 @@ def _launch_browser(p):
 
     chrome_path = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
-    # Try Chromium (playwright-managed), then system Chrome, then WebKit, then Firefox
     try:
         return p.chromium.launch(**launch_args)
     except Exception:
@@ -35,7 +34,7 @@ def _launch_browser(p):
 
     raise RuntimeError("Failed to launch any Playwright browser (chromium/webkit/firefox)")
 
-# Base URL for the frontend (adjust based on your setup)
+# Base URL for the frontend
 BASE_URL = "http://127.0.0.1:8000"
 API_URL = "http://127.0.0.1:5000"
 

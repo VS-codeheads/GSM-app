@@ -8,8 +8,7 @@ def get_sql_connection():
 
     # In CI, skip DB connection entirely
     if os.getenv("CI") == "true":
-        print("CI mode: returning None for SQL connection")
-        return None
+        raise RuntimeError("DB disabled in CI mode")
 
     # Validate required variables
     if not os.getenv("MYSQL_USER"):
