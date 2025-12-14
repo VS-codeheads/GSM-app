@@ -4,16 +4,19 @@ Creates the grocery_store database, tables, and seeds initial data.
 
 import mysql.connector
 from mysql.connector import Error
-from sql_connection import get_sql_connection
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # -----------------------------------
 # CONFIGURE CONNECTION
 # -----------------------------------
 MYSQL_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "My-SQL-Pass",  #change to fit our own password for MySQL    
-    "port": 3306
+    "host": os.getenv("MYSQL_HOST", "localhost"),
+    "user": os.getenv("MYSQL_USER", "root"),
+    "password": os.getenv("MYSQL_PASSWORD", "My-SQL-Pass"),
+    "port": int(os.getenv("MYSQL_PORT", 3306))
 }
 
 
@@ -55,6 +58,9 @@ ORDER_DETAILS = [
 def main():
     print("Connecting to MySQL...")
 
+    conn = None
+    cursor = None
+    
     try:
         conn = mysql.connector.connect(**MYSQL_CONFIG)
         cursor = conn.cursor()
@@ -188,7 +194,7 @@ def main():
         print(e)
 
     finally:
-        if conn.is_connected():
+        if conn is not None and conn.is_connected():
             cursor.close()
             conn.close()
             print("✔ MySQL connection closed")
