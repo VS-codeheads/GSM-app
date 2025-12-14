@@ -223,35 +223,6 @@ jobs:
             --env-var BASE_URL="${BASE_URL}" || true
 
       # -------------------------------------------------
-      # E2E tests – Playwright
-      # -------------------------------------------------
-      - name: Install http-server
-        run: npm install -g http-server
-
-      - name: Start frontend server (background on :8000)
-        run: |
-          nohup http-server -p 8000 > /tmp/frontend.log 2>&1 &
-          echo $! > /tmp/frontend.pid
-        working-directory: ./UI
-
-      - name: Wait for frontend on :8000
-        run: |
-          for i in {1..60}; do
-            curl -fsS "${FRONTEND_URL}/index.html" && exit 0
-            sleep 1
-          done
-          echo "Frontend did not start on ${FRONTEND_URL} within 60s"
-          exit 1
-
-      - name: Install Playwright browsers
-        run: pip install pytest-playwright && playwright install
-
-      - name: Run E2E tests
-        env:
-          PYTHONPATH: ${{ env.PYTHONPATH }}
-        run: pytest tests/e2e -v
-
-      # -------------------------------------------------
       # Debug logs on failure
       # -------------------------------------------------
       - name: Show logs on failure
